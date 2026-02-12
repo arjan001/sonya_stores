@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import * as bcrypt from 'bcrypt'
+import { verifyPassword } from '@/lib/password'
 import { randomBytes } from 'crypto'
+import { SignJWT } from 'jose'
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const passwordMatch = await bcrypt.compare(password, admin.password_hash)
+    const passwordMatch = await verifyPassword(password, admin.password_hash)
 
     if (!passwordMatch) {
       return NextResponse.json(
@@ -46,18 +49,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate token
-    const token = randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    // Generate JWT token
+    const token = await new SignJWT({ sub: admin.id, email: admin.email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('24h')
+      .sign(secret)
 
-    // Create session
+    // Create session record
     await query(
       `INSERT INTO admin_sessions (admin_id, token_hash, expires_at, ip_address, user_agent)
        VALUES ($1, $2, $3, $4, $5)`,
       [
         admin.id,
-        token,
-        expiresAt,
+        token.substring(0, 50),
+        new Date(Date.now() + 24 * 60 * 60 * 1000),
         request.headers.get('x-forwarded-for') || 'unknown',
         request.headers.get('user-agent') || 'unknown',
       ]

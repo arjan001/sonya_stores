@@ -41,7 +41,6 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.1",
     "autoprefixer": "^10.4.20",
-    "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
@@ -70,7 +69,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
-    "@types/bcrypt": "^5.0.2",
     "@types/node": "^22",
     "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.11.6",
