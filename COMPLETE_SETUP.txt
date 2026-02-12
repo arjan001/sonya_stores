@@ -1,0 +1,44 @@
+SONYA STORES - COMPLETE SETUP GUIDE
+
+ISSUE FIXED:
+- Removed all Supabase code (18 files updated, 4 files deleted)
+- All code now uses Neon PostgreSQL directly
+- Admin login fixed with proper error logging
+- Created admin seed script to initialize first admin
+
+QUICK START:
+1. Set .env.local:
+   DATABASE_URL=your-neon-url
+   JWT_SECRET=random-key
+   OPENAI_API_KEY=your-key
+
+2. Create admin account:
+   pnpm seed:admin
+
+3. Start server:
+   pnpm dev
+
+4. Login at:
+   http://localhost:3000/admin/login
+   Email: admin@sonyastores.com
+   Password: Admin123!
+
+5. Seed products:
+   pnpm seed:ai-products
+
+COMPONENTS:
+✓ Database: Neon PostgreSQL
+✓ Authentication: JWT + HTTP-only cookies
+✓ Admin Panel: JWT protected routes
+✓ Products: 50+ AI-generated products
+✓ Cart: Working with add/remove
+✓ Checkout: Saves orders to Neon
+
+FILES CREATED:
+- scripts/seed-admin.js - Create default admin
+- scripts/seed-ai-products.js - Generate 50+ products
+- ADMIN_LOGIN_SETUP.md - Admin setup guide
+- Multiple documentation files
+
+NO MORE SUPABASE ERRORS!
+All authentication and data storage now uses Neon.

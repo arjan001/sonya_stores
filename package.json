@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:ai-products": "node scripts/seed-ai-products.js"
+    "seed:ai-products": "node scripts/seed-ai-products.js",
+    "seed:admin": "node scripts/seed-admin.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.0",
