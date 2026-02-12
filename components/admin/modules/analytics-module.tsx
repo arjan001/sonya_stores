@@ -45,8 +45,14 @@ export function AnalyticsModule() {
     }
   }
 
-  if (loading) return <div className="text-center py-10">Loading...</div>
-  if (!analytics) return <div className="text-center py-10">No data available</div>
+  if (loading) return <div className="text-center py-10">Loading analytics...</div>
+  if (!analytics) {
+    return (
+      <div className="text-center py-10 text-red-600">
+        Failed to load analytics. Please try refreshing the page.
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -92,8 +98,8 @@ export function AnalyticsModule() {
             <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{analytics.topCategories[0]?.name || "N/A"}</div>
-            <p className="text-xs text-muted-foreground">{analytics.topCategories[0]?.count || 0} products</p>
+            <div className="text-2xl font-bold">{analytics?.topCategories?.[0]?.name || "N/A"}</div>
+            <p className="text-xs text-muted-foreground">{analytics?.topCategories?.[0]?.count || 0} products</p>
           </CardContent>
         </Card>
       </div>
@@ -104,14 +110,14 @@ export function AnalyticsModule() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {analytics.topCategories.map((cat, idx) => (
+            {(analytics?.topCategories || []).map((cat, idx) => (
               <div key={idx} className="flex items-center justify-between">
                 <span className="text-sm">{cat.name}</span>
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-foreground"
-                      style={{ width: `${(cat.count / (analytics.topCategories[0]?.count || 1)) * 100}%` }}
+                      style={{ width: `${(cat.count / (analytics?.topCategories?.[0]?.count || 1)) * 100}%` }}
                     />
                   </div>
                   <span className="text-sm font-medium">{cat.count}</span>

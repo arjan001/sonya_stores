@@ -26,13 +26,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/admin/me')
+        const res = await fetch('/api/admin/me', {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        })
         if (!res.ok) {
           router.push('/admin/login')
           return
         }
         setAdmin(await res.json())
       } catch (error) {
+        console.error("[v0] Auth check failed:", error)
         router.push('/admin/login')
       } finally {
         setLoading(false)
