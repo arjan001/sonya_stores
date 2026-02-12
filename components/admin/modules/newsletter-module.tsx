@@ -37,13 +37,20 @@ export function NewsletterModule() {
         offset: String(page * pageSize),
         ...(searchTerm && { search: searchTerm }),
       })
-      const res = await fetch(`/api/admin/newsletter?${params}`)
+      const res = await fetch(`/api/admin/newsletter?${params}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed to fetch")
-      const { subscribers: data, total: count } = await res.json()
-      setSubscribers(data)
-      setTotal(count)
+      const data = await res.json()
+      // Handle both array and { subscribers } formats
+      const subscribersList = Array.isArray(data) ? data : (data.subscribers || [])
+      setSubscribers(subscribersList)
+      setTotal(data.total || subscribersList.length)
     } catch (error) {
       console.error("[v0] Error:", error)
+      setSubscribers([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }
@@ -54,6 +61,7 @@ export function NewsletterModule() {
     try {
       const res = await fetch("/api/admin/newsletter", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
@@ -71,7 +79,11 @@ export function NewsletterModule() {
   const handleDelete = async (id: string) => {
     if (!confirm("Remove this subscriber?")) return
     try {
-      const res = await fetch(`/api/admin/newsletter?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/newsletter?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed")
       fetchSubscribers()
     } catch (error) {

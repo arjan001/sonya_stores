@@ -98,7 +98,10 @@ export function OrdersModule() {
 
   const handleViewDetails = async (order: Order) => {
     try {
-      const res = await fetch(`/api/admin/orders?id=${order.id}`)
+      const res = await fetch(`/api/admin/orders?id=${order.id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const fullOrder = await res.json()
         setSelectedOrder(fullOrder)
@@ -163,8 +166,8 @@ export function OrdersModule() {
             className="flex-1"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }}>
-          <SelectTrigger>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }} suppressHydrationWarning>
+          <SelectTrigger suppressHydrationWarning>
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>

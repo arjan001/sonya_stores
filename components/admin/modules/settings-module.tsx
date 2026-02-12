@@ -23,7 +23,10 @@ export function SettingsModule() {
   const fetchSettings = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/settings")
+      const res = await fetch("/api/admin/settings", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed to fetch settings")
       const data = await res.json()
       setSettings(data)
@@ -40,6 +43,7 @@ export function SettingsModule() {
       setSaving(true)
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })

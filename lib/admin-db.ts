@@ -289,20 +289,29 @@ export async function deleteBanner(id: string) {
 
 // ============ ANALYTICS ============
 export async function getAnalytics() {
-  const [totalOrders, pendingOrders, totalRevenue, totalProducts, activeProducts] = await Promise.all([
+  const [totalOrders, pendingOrders, totalRevenue, topCategories] = await Promise.all([
     query('SELECT COUNT(*) as count FROM orders'),
     query('SELECT COUNT(*) as count FROM orders WHERE status = $1', ['pending']),
     query('SELECT SUM(total_amount) as total FROM orders WHERE status != $1', ['cancelled']),
-    query('SELECT COUNT(*) as count FROM products WHERE status != $1', ['archived']),
-    query('SELECT COUNT(*) as count FROM products WHERE status = $1', ['active'])
+    query(`
+      SELECT c.name, COUNT(p.id) as count
+      FROM categories c
+      LEFT JOIN products p ON p.category_id = c.id
+      WHERE c.is_active = true
+      GROUP BY c.id, c.name
+      ORDER BY count DESC
+      LIMIT 5
+    `),
   ])
 
   return {
-    totalOrders: parseInt(totalOrders.rows[0].count || 0, 10),
-    pendingOrders: parseInt(pendingOrders.rows[0].count || 0, 10),
-    totalRevenue: parseFloat(totalRevenue.rows[0].total || 0),
-    totalProducts: parseInt(totalProducts.rows[0].count || 0, 10),
-    activeProducts: parseInt(activeProducts.rows[0].count || 0, 10)
+    totalOrders: parseInt(totalOrders.rows[0]?.count || 0, 10),
+    pendingOrders: parseInt(pendingOrders.rows[0]?.count || 0, 10),
+    totalRevenue: parseFloat(totalRevenue.rows[0]?.total || 0),
+    topCategories: (topCategories.rows || []).map((row: any) => ({
+      name: row.name,
+      count: parseInt(row.count, 10)
+    }))
   }
 }
 

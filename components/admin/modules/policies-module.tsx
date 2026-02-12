@@ -46,7 +46,10 @@ export function PoliciesModule() {
   const fetchPolicies = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/policies")
+      const res = await fetch("/api/admin/policies", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       setPolicies(data)
@@ -65,6 +68,7 @@ export function PoliciesModule() {
 
       const res = await fetch("/api/admin/policies", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -81,7 +85,10 @@ export function PoliciesModule() {
 
   const handleEdit = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/policies?id=${id}`)
+      const res = await fetch(`/api/admin/policies?id=${id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const policy = await res.json()
         setFormData({
@@ -102,7 +109,11 @@ export function PoliciesModule() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this policy?")) return
     try {
-      const res = await fetch(`/api/admin/policies?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/policies?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed")
       fetchPolicies()
     } catch (error) {

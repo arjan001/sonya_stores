@@ -58,7 +58,10 @@ export function OffersModule() {
 
   const fetchOffers = async () => {
     try {
-      const res = await fetch("/api/admin/offers")
+      const res = await fetch("/api/admin/offers", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       setOffers(data)
@@ -71,7 +74,10 @@ export function OffersModule() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/admin/products?limit=1000")
+      const res = await fetch("/api/admin/products?limit=1000", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const { products: data } = await res.json()
         setProducts(data)
@@ -83,7 +89,10 @@ export function OffersModule() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories")
+      const res = await fetch("/api/admin/categories", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const data = await res.json()
         setCategories(data)
@@ -101,6 +110,7 @@ export function OffersModule() {
 
       const res = await fetch("/api/admin/offers", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -118,7 +128,11 @@ export function OffersModule() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this offer?")) return
     try {
-      const res = await fetch(`/api/admin/offers?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/offers?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed")
       fetchOffers()
     } catch (error) {
@@ -188,7 +202,25 @@ export function OffersModule() {
                     </span>
                   </td>
                   <td className="px-6 py-3 text-center flex gap-2 justify-center">
-                    <Button size="sm" variant="ghost" onClick={() => handleSave}>
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      const offer = offers.find(o => o.id === offer.id)
+                      if (offer) {
+                        setFormData({
+                          title: offer.title,
+                          description: offer.description || '',
+                          discount_percentage: offer.discount_percentage || 0,
+                          discount_amount: offer.discount_amount || 0,
+                          applies_to: offer.applies_to,
+                          product_id: offer.product_id || '',
+                          category_id: offer.category_id || '',
+                          start_date: offer.start_date,
+                          end_date: offer.end_date,
+                          is_active: offer.is_active,
+                        })
+                        setEditingId(offer.id)
+                        setIsDialogOpen(true)
+                      }
+                    }}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
                     <Button

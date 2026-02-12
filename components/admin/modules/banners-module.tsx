@@ -34,7 +34,10 @@ export function BannersModule() {
   const fetchBanners = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/banners")
+      const res = await fetch("/api/admin/banners", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed to fetch banners")
       const data = await res.json()
       setBanners(data)
@@ -52,6 +55,7 @@ export function BannersModule() {
 
       const res = await fetch("/api/admin/banners", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -67,21 +71,14 @@ export function BannersModule() {
     }
   }
 
-  const handleEdit = (banner: Banner) => {
-    setFormData({
-      title: banner.title,
-      imageUrl: banner.image_url,
-      linkUrl: banner.link_url,
-      isActive: banner.is_active,
-    })
-    setEditingId(banner.id)
-    setIsDialogOpen(true)
-  }
-
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this banner?")) return
     try {
-      const res = await fetch(`/api/admin/banners?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/banners?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed to delete")
       fetchBanners()
     } catch (error) {
@@ -128,8 +125,15 @@ export function BannersModule() {
             <tbody>
               {filtered.map((banner) => (
                 <tr key={banner.id} className="border-t hover:bg-muted/50">
-                  <td className="px-6 py-3">{banner.title}</td>
-                  <td className="px-6 py-3 text-muted-foreground text-xs">{banner.link_url}</td>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-2">
+                      {banner.image_url && (
+                        <img src={banner.image_url} alt={banner.title} className="h-8 w-12 object-cover rounded" />
+                      )}
+                      <span className="font-medium">{banner.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-3 text-muted-foreground text-xs truncate">{banner.link_url}</td>
                   <td className="px-6 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${banner.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
                       {banner.is_active ? "Active" : "Inactive"}

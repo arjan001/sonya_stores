@@ -42,7 +42,10 @@ export function CategoriesModule() {
   const fetchCategories = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/categories")
+      const res = await fetch("/api/admin/categories", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed to fetch categories")
       const data = await res.json()
       setCategories(data)
@@ -66,6 +69,7 @@ export function CategoriesModule() {
 
       const res = await fetch("/api/admin/categories", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -86,7 +90,10 @@ export function CategoriesModule() {
 
   const handleEdit = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/categories?id=${id}`)
+      const res = await fetch(`/api/admin/categories?id=${id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const category = await res.json()
         setFormData({
@@ -107,7 +114,11 @@ export function CategoriesModule() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/categories?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed to delete")
       setDeleteConfirm(null)
       fetchCategories()
