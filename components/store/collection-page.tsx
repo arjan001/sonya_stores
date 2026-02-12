@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
-import Image from "next/image"
-import { SlidersHorizontal, Grid3X3, LayoutList, X, Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { useState, useMemo, useEffect } from "react"
+import { SlidersHorizontal, Grid3X3, LayoutList, X, Search } from "lucide-react"
 import { usePagination } from "@/hooks/use-pagination"
 import { PaginationControls } from "@/components/pagination-controls"
 import { TopBar } from "./top-bar"
@@ -22,29 +21,6 @@ function formatPrice(price: number): string {
   return `KSh ${price.toLocaleString()}`
 }
 
-const COLLECTION_INFO: Record<string, { label: string; tagline: string; banners: string[]; social?: { label: string; handle: string; url: string } }> = {
-  men: {
-    label: "Men's Collection",
-    tagline: "Rugged denim designed for the modern man",
-    banners: ["/banners/men-page-banner.jpg", "/banners/men-collection.jpg"],
-  },
-  women: {
-    label: "Women's Collection",
-    tagline: "Curated denim styles for every woman",
-    banners: ["/banners/women-page-banner.jpg", "/banners/women-collection.jpg"],
-  },
-  babyshop: {
-    label: "Kali-ttos Little Wardrobe",
-    tagline: "All your baby essentials in one place -- clothing, shoes & accessories for ages 0-1, 1-3 & 4-6.",
-    banners: ["/banners/babyshop-page-banner.jpg", "/banners/babyshop-collection.jpg"],
-    social: {
-      label: "Follow us on TikTok",
-      handle: "@kalittos01",
-      url: "https://www.tiktok.com/@kalittos01",
-    },
-  },
-}
-
 const sortOptions = [
   { value: "newest", label: "Newest" },
   { value: "price-low", label: "Price: Low to High" },
@@ -52,109 +28,13 @@ const sortOptions = [
   { value: "name", label: "Name A-Z" },
 ]
 
-function CollectionBanner({ collection }: { collection: string }) {
-  const info = COLLECTION_INFO[collection]
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const banners = info?.banners || []
-
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % banners.length)
-  }, [banners.length])
-
-  useEffect(() => {
-    if (banners.length <= 1) return
-    const interval = setInterval(nextSlide, 4000)
-    return () => clearInterval(interval)
-  }, [banners.length, nextSlide])
-
-  if (!info) return null
-
-  return (
-    <div className="relative w-full h-[180px] md:h-[220px] overflow-hidden rounded-sm">
-      {banners.map((src, i) => (
-        <div
-          key={src}
-          className="absolute inset-0 transition-opacity duration-700"
-          style={{ opacity: i === currentSlide ? 1 : 0 }}
-        >
-          <Image
-            src={src}
-            alt={`${collection === "men" ? "Men's" : collection === "women" ? "Women's" : "Kali-ttos Little Wardrobe"} denim collection banner`}
-            fill
-            className="object-cover"
-            priority={i === 0}
-            title={`${info.label} - ${info.tagline}`}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/60 via-foreground/30 to-transparent" />
-        </div>
-      ))}
-      <div className="relative z-10 flex items-center h-full px-8 md:px-12">
-        <div>
-          <p className="text-background/70 text-[10px] tracking-[0.3em] uppercase mb-1.5">Shop</p>
-          <h1 className="text-background text-2xl md:text-3xl font-serif font-bold">{info.label}</h1>
-          <p className="text-background/70 text-sm mt-1">{info.tagline}</p>
-          {info.social && (
-            <a
-              href={info.social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 mt-3 bg-background/20 backdrop-blur-sm text-background text-xs font-medium px-3 py-1.5 rounded-full hover:bg-background/30 transition-colors"
-              title={`Follow Kali-ttos Little Wardrobe on TikTok`}
-            >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.88 2.89 2.89 0 0 1 2.88-2.88c.28 0 .56.04.82.12v-3.5a6.37 6.37 0 0 0-.82-.05A6.34 6.34 0 0 0 3.15 15.3 6.34 6.34 0 0 0 9.49 21.65 6.34 6.34 0 0 0 15.83 15.3V8.76a8.3 8.3 0 0 0 4.87 1.56V6.87a4.84 4.84 0 0 1-1.11-.18Z" /></svg>
-              {info.social.handle}
-            </a>
-          )}
-        </div>
-      </div>
-      {banners.length > 1 && (
-        <div className="absolute bottom-3 right-4 z-10 flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)}
-            className="p-1 bg-background/20 backdrop-blur-sm rounded-sm hover:bg-background/40 transition-colors"
-          >
-            <ChevronLeft className="h-3.5 w-3.5 text-background" />
-          </button>
-          {banners.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setCurrentSlide(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentSlide ? "bg-background" : "bg-background/40"}`}
-            />
-          ))}
-          <button
-            type="button"
-            onClick={nextSlide}
-            className="p-1 bg-background/20 backdrop-blur-sm rounded-sm hover:bg-background/40 transition-colors"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-background" />
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function FilterSidebar({
-  categories, selectedCategory, setSelectedCategory, priceRange, setPriceRange, showNew, setShowNew, showOffers, setShowOffers, maxPrice,
+  priceRange, setPriceRange, showNew, setShowNew, showOffers, setShowOffers, maxPrice,
 }: {
-  categories: Category[]; selectedCategory: string; setSelectedCategory: (cat: string) => void; priceRange: number[]; setPriceRange: (range: number[]) => void; showNew: boolean; setShowNew: (show: boolean) => void; showOffers: boolean; setShowOffers: (show: boolean) => void; maxPrice: number
+  priceRange: number[]; setPriceRange: (range: number[]) => void; showNew: boolean; setShowNew: (show: boolean) => void; showOffers: boolean; setShowOffers: (show: boolean) => void; maxPrice: number
 }) {
   return (
     <div className="space-y-8">
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Categories</h3>
-        <div className="flex flex-col gap-2">
-          <button type="button" onClick={() => setSelectedCategory("")} className={`text-left text-sm py-1.5 transition-colors ${selectedCategory === "" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}>All Categories</button>
-          {categories.map((cat) => (
-            <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.slug)} className={`text-left text-sm py-1.5 flex items-center justify-between transition-colors ${selectedCategory === cat.slug ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {cat.name}<span className="text-xs">({cat.productCount})</span>
-            </button>
-          ))}
-        </div>
-      </div>
       <div>
         <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Price Range</h3>
         <Slider min={0} max={maxPrice} step={100} value={priceRange} onValueChange={setPriceRange} className="mb-3" />
@@ -174,14 +54,18 @@ function FilterSidebar({
 }
 
 export function CollectionPage({ collection }: { collection: string }) {
-  const info = COLLECTION_INFO[collection]
   const { data: allProducts = [] } = useSWR<Product[]>("/api/products", fetcher)
   const { data: categories = [] } = useSWR<Category[]>("/api/categories", fetcher)
 
-  // Filter products by collection
-  const collectionProducts = useMemo(() => allProducts.filter((p) => p.collection === collection), [allProducts, collection])
+  const categoryInfo = categories.find((c) => c.slug === collection)
+  const categoryLabel = categoryInfo?.name || collection.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
 
-  const [selectedCategory, setSelectedCategory] = useState("")
+  // Filter products by this category slug
+  const collectionProducts = useMemo(
+    () => allProducts.filter((p) => p.categorySlug === collection),
+    [allProducts, collection]
+  )
+
   const [sortBy, setSortBy] = useState("newest")
   const [showNew, setShowNew] = useState(false)
   const [showOffers, setShowOffers] = useState(false)
@@ -203,9 +87,8 @@ export function CollectionPage({ collection }: { collection: string }) {
     let result = [...collectionProducts]
     if (localSearch) {
       const q = localSearch.toLowerCase()
-      result = result.filter((p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.tags.some((t) => t.toLowerCase().includes(q)))
+      result = result.filter((p) => p.name.toLowerCase().includes(q) || p.tags.some((t) => t.toLowerCase().includes(q)))
     }
-    if (selectedCategory) result = result.filter((p) => p.categorySlug === selectedCategory)
     if (showNew) result = result.filter((p) => p.isNew)
     if (showOffers) result = result.filter((p) => p.isOnOffer)
     if (priceRange[0] > 0 || priceRange[1] < maxPrice) result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
@@ -216,14 +99,13 @@ export function CollectionPage({ collection }: { collection: string }) {
       default: result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     }
     return result
-  }, [collectionProducts, selectedCategory, showNew, showOffers, priceRange, sortBy, localSearch, maxPrice])
+  }, [collectionProducts, showNew, showOffers, priceRange, sortBy, localSearch, maxPrice])
 
   const { paginatedItems, currentPage, totalPages, totalItems, itemsPerPage, goToPage, changePerPage, resetPage } = usePagination(filtered, { defaultPerPage: 12 })
 
-  useEffect(() => { resetPage() }, [selectedCategory, showNew, showOffers, sortBy, localSearch])
+  useEffect(() => { resetPage() }, [showNew, showOffers, sortBy, localSearch])
 
   const activeFilters = [
-    selectedCategory && categories.find((c) => c.slug === selectedCategory)?.name,
     showNew && "New Arrivals",
     showOffers && "On Offer",
     (priceRange[0] > 0 || priceRange[1] < maxPrice) && `${formatPrice(priceRange[0])} - ${formatPrice(priceRange[1])}`,
@@ -235,13 +117,18 @@ export function CollectionPage({ collection }: { collection: string }) {
       <Navbar />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-6">
-          {/* Collection Banner */}
-          <CollectionBanner collection={collection} />
+          {/* Category header */}
+          <div className="relative w-full h-[140px] md:h-[180px] overflow-hidden rounded-sm bg-secondary flex items-center px-8 md:px-12">
+            <div>
+              <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mb-1.5">Shop</p>
+              <h1 className="text-foreground text-2xl md:text-3xl font-serif font-bold text-balance">{categoryLabel}</h1>
+              <p className="text-muted-foreground text-sm mt-1">{filtered.length} product{filtered.length !== 1 ? "s" : ""} available</p>
+            </div>
+          </div>
 
           <div className="flex items-end justify-between mt-8 mb-6">
             <div>
-              <h2 className="text-2xl font-serif font-bold">{info?.label || "Collection"}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{filtered.length} product{filtered.length !== 1 ? "s" : ""}</p>
+              <h2 className="text-xl font-serif font-bold">{categoryLabel}</h2>
             </div>
             <div className="hidden md:flex items-center border border-border rounded-sm max-w-xs">
               <input type="text" placeholder="Filter products..." value={localSearch} onChange={(e) => setLocalSearch(e.target.value)} className="flex-1 h-9 px-3 bg-background text-sm outline-none" />
@@ -256,20 +143,19 @@ export function CollectionPage({ collection }: { collection: string }) {
                 <span key={String(filter)} className="flex items-center gap-1.5 bg-secondary text-foreground text-xs px-3 py-1.5 rounded-sm">
                   {String(filter)}
                   <button type="button" onClick={() => {
-                    if (filter === categories.find((c) => c.slug === selectedCategory)?.name) setSelectedCategory("")
                     if (filter === "New Arrivals") setShowNew(false)
                     if (filter === "On Offer") setShowOffers(false)
                     if (String(filter).includes("KSh")) setPriceRange([0, maxPrice])
                   }}><X className="h-3 w-3" /></button>
                 </span>
               ))}
-              <button type="button" onClick={() => { setSelectedCategory(""); setShowNew(false); setShowOffers(false); setPriceRange([0, maxPrice]); setLocalSearch("") }} className="text-xs text-muted-foreground hover:text-foreground underline">Clear All</button>
+              <button type="button" onClick={() => { setShowNew(false); setShowOffers(false); setPriceRange([0, maxPrice]); setLocalSearch("") }} className="text-xs text-muted-foreground hover:text-foreground underline">Clear All</button>
             </div>
           )}
 
           <div className="flex gap-8">
             <aside className="hidden lg:block w-60 flex-shrink-0">
-              <FilterSidebar categories={categories} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} priceRange={priceRange} setPriceRange={setPriceRange} showNew={showNew} setShowNew={setShowNew} showOffers={showOffers} setShowOffers={setShowOffers} maxPrice={maxPrice} />
+              <FilterSidebar priceRange={priceRange} setPriceRange={setPriceRange} showNew={showNew} setShowNew={setShowNew} showOffers={showOffers} setShowOffers={setShowOffers} maxPrice={maxPrice} />
             </aside>
 
             <div className="flex-1">
@@ -279,7 +165,7 @@ export function CollectionPage({ collection }: { collection: string }) {
                     <SheetTrigger asChild><Button variant="outline" size="sm" className="lg:hidden bg-transparent"><SlidersHorizontal className="h-4 w-4 mr-2" />Filters</Button></SheetTrigger>
                     <SheetContent side="left" className="w-80 bg-background text-foreground p-6">
                       <h2 className="text-lg font-serif font-semibold mb-6">Filters</h2>
-                      <FilterSidebar categories={categories} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} priceRange={priceRange} setPriceRange={setPriceRange} showNew={showNew} setShowNew={setShowNew} showOffers={showOffers} setShowOffers={setShowOffers} maxPrice={maxPrice} />
+                      <FilterSidebar priceRange={priceRange} setPriceRange={setPriceRange} showNew={showNew} setShowNew={setShowNew} showOffers={showOffers} setShowOffers={setShowOffers} maxPrice={maxPrice} />
                     </SheetContent>
                   </Sheet>
                   <div className="hidden sm:flex items-center border border-border rounded-sm">
@@ -294,7 +180,7 @@ export function CollectionPage({ collection }: { collection: string }) {
 
               {filtered.length === 0 ? (
                 <div className="text-center py-20">
-                  <p className="text-muted-foreground">No products found in this collection yet.</p>
+                  <p className="text-muted-foreground">No products found in this category yet.</p>
                   <p className="text-sm text-muted-foreground mt-2">Check back soon for new arrivals!</p>
                 </div>
               ) : (

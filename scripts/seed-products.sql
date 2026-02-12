@@ -1,9 +1,11 @@
 -- Seed categories and products for Sonya Stores
 -- Run this script against the Neon database
 
--- Clear existing data
+-- Clear existing data (respect FK constraints)
 DELETE FROM order_items;
 DELETE FROM orders;
+DELETE FROM offers;
+DELETE FROM banners;
 DELETE FROM products;
 DELETE FROM categories;
 
