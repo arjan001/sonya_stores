@@ -6,27 +6,27 @@ import { Footer } from "@/components/store/footer"
 import { TrackOrderForm } from "@/components/store/track-order-form"
 
 export const metadata: Metadata = {
-  title: "Track My Order | Kallittos Fashions",
+  title: "Track My Order | Sonya Stores",
   description:
-    "Track your Kallittos Fashions order in real time. Enter your order number or phone number to see the status of your denim delivery across Kenya.",
-  alternates: { canonical: "https://kallittofashions.com/track-order" },
+    "Track your Sonya Stores order in real time. Enter your order number or phone number to see the status of your delivery across Kenya.",
+  alternates: { canonical: "https://sonya-stores.com/track-order" },
   keywords: [
-    "track order Kallittos", "kallittosfashions order tracking", "track jeans delivery Kenya",
-    "Kallittos Fashions order status", "denim delivery Nairobi", "check order Kenya",
+    "track order Sonya Stores", "sonya stores order tracking", "track order Kenya",
+    "Sonya Stores order status", "delivery Nairobi", "check order Kenya",
   ],
   openGraph: {
-    title: "Track My Order | Kallittos Fashions",
-    description: "Track your thrift denim order in real time. Enter your order number or phone to check delivery status.",
-    url: "https://kallittofashions.com/track-order",
+    title: "Track My Order | Sonya Stores",
+    description: "Track your order in real time. Enter your order number or phone to check delivery status.",
+    url: "https://sonya-stores.com/track-order",
     type: "website",
-    siteName: "Kallittos Fashions",
+    siteName: "Sonya Stores",
     locale: "en_KE",
-    images: [{ url: "https://kallittofashions.com/logo-kf.png", width: 512, height: 512, alt: "Kallittos Fashions Order Tracking" }],
+    images: [{ url: "https://sonya-stores.com/logo.png", width: 512, height: 512, alt: "Sonya Stores Order Tracking" }],
   },
   twitter: {
     card: "summary",
-    title: "Track My Order | Kallittos Fashions",
-    description: "Track your denim delivery in real time across Kenya.",
+    title: "Track My Order | Sonya Stores",
+    description: "Track your delivery in real time across Kenya.",
   },
 }
 

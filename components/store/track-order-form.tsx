@@ -88,10 +88,18 @@ export function TrackOrderForm({ initialOrderNumber }: { initialOrderNumber?: st
 
       if (!res.ok) {
         setError(data.error || "Order not found")
+        setOrders([])
       } else {
-        setOrders(data)
+        // Handle both array and { orders } format
+        const ordersList = Array.isArray(data) ? data : data.orders || []
+        if (ordersList.length === 0) {
+          setError("No orders found for that query")
+        } else {
+          setOrders(ordersList)
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error("[v0] Track order error:", err)
       setError("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
@@ -172,7 +180,7 @@ export function TrackOrderForm({ initialOrderNumber }: { initialOrderNumber?: st
               : "Make sure you are using the same phone number you provided when placing your order."}
           </p>
           <a
-            href="https://wa.me/254713809695?text=Hi%2C%20I%20need%20help%20tracking%20my%20order"
+            href="https://wa.me/254722123456?text=Hi%2C%20I%20need%20help%20tracking%20my%20order"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 mt-4 text-sm font-medium text-emerald-700 hover:underline"
@@ -264,7 +272,15 @@ export function TrackOrderForm({ initialOrderNumber }: { initialOrderNumber?: st
                   <div key={i} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
                     {item.image && (
                       <div className="w-10 h-12 rounded-sm overflow-hidden bg-secondary flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover" 
+                          loading="lazy"
+                          onError={(e) => {
+                            ;(e.target as HTMLImageElement).style.display = "none"
+                          }}
+                        />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
