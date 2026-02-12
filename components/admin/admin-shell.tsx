@@ -43,7 +43,13 @@ interface CurrentUser {
   role: string
 }
 
-export function AdminShell({ children, title }: { children: ReactNode; title: string }) {
+export function AdminShell({ 
+  children, 
+  title
+}: { 
+  children: ReactNode
+  title: string
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)

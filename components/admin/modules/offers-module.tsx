@@ -101,8 +101,6 @@ export function OffersModule() {
       console.error("[v0] Error:", error)
     }
   }
-    }
-  }
 
   const handleSave = async () => {
     if (!formData.title) return
