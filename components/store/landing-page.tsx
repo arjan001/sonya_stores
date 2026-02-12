@@ -3,7 +3,7 @@
 import { TopBar } from "./top-bar"
 import { Navbar } from "./navbar"
 import { Hero } from "./hero"
-import { CategoriesSection } from "./categories-section" // TODO: Redundant with Hero banners, commented out for now
+import { CategoriesSection } from "./categories-section"
 import { FeaturedProducts } from "./featured-products"
 import { OfferBanner } from "./offer-banner"
 import { NewArrivals } from "./new-arrivals"

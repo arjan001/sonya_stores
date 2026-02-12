@@ -19,27 +19,7 @@ function formatPrice(price: number): string {
   return `KSh ${price.toLocaleString()}`
 }
 
-function BabyshopNavLink() {
-  const [showTooltip, setShowTooltip] = useState(false)
-  return (
-    <div className="relative group">
-      <Link
-        href="/shop/babyshop"
-        className="text-sm font-medium neon-flicker text-pink-600 hover:text-pink-700 transition-colors relative"
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
-        Babyshop ✨
-      </Link>
-      {showTooltip && (
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-foreground text-background px-3 py-2 rounded-sm text-xs whitespace-nowrap z-50 pointer-events-none">
-          Kali-ttos Little Wardrobe
-          <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-foreground rotate-45" />
-        </div>
-      )}
-    </div>
-  )
-}
+
 
 export function Navbar() {
   const router = useRouter()
@@ -119,31 +99,28 @@ export function Navbar() {
             <SheetContent side="left" className="w-80 bg-background text-foreground p-0">
               <div className="p-6">
                 <Link href="/" className="font-serif text-2xl font-bold tracking-tight">
-                  Kallitos Fashion
+                  Sonya Stores
                 </Link>
               </div>
               <nav className="flex flex-col px-6 gap-1">
                 <Link href="/" className="py-3 text-sm font-medium border-b border-border">Home</Link>
                 <Link href="/shop" className="py-3 text-sm font-medium border-b border-border">Shop All</Link>
-                <p className="pt-3 pb-1 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Collections</p>
-                <Link href="/shop/men" className="py-2.5 text-sm border-b border-border pl-3">Men</Link>
-                <Link href="/shop/women" className="py-2.5 text-sm border-b border-border pl-3">Women</Link>
-                <Link href="/shop/babyshop" className="py-2.5 text-sm border-b border-border pl-3 text-pink-600 font-medium">Babyshop ✨</Link>
                 <p className="pt-3 pb-1 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Categories</p>
-                {categories.map((cat) => (
-                  <Link key={cat.id} href={`/shop?category=${cat.slug}`} className="py-2.5 text-sm border-b border-border pl-3">{cat.name}</Link>
-                ))}
-                <Link href="/track-order" className="py-3 text-sm font-medium border-b border-border">Track My Order</Link>
+                <Link href="/shop?category=womens-shoes" className="py-2.5 text-sm border-b border-border pl-3">Women's Shoes</Link>
+                <Link href="/shop?category=mens-shoes" className="py-2.5 text-sm border-b border-border pl-3">Men's Shoes</Link>
+                <Link href="/shop?category=sneakers" className="py-2.5 text-sm border-b border-border pl-3">Sneakers</Link>
+                <Link href="/shop?category=handbags" className="py-2.5 text-sm border-b border-border pl-3">Handbags</Link>
+                <Link href="/shop?category=home-accessories" className="py-2.5 text-sm border-b border-border pl-3">Home Accessories</Link>
+                <Link href="/shop/track-order" className="py-3 text-sm font-medium border-b border-border mt-2">Track My Order</Link>
               </nav>
               <div className="px-6 py-4 mt-4 space-y-3">
-                <a href="https://www.instagram.com/kallittofashions/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">Instagram</a>
-                <a href="https://www.tiktok.com/@kallittos" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">TikTok</a>
-                <a href="tel:+254713809695" className="flex items-center gap-2 text-sm font-medium"><Phone className="h-4 w-4" />0713 809 695</a>
+                <a href="https://www.tiktok.com/@sonyas.store" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">TikTok</a>
+                <a href="tel:+254723274619" className="flex items-center gap-2 text-sm font-medium"><Phone className="h-4 w-4" />0723 274 619</a>
               </div>
             </SheetContent>
           </Sheet>
 
-          <Link href="/" className="font-serif text-xl lg:text-2xl font-bold tracking-tight">Kallitos Fashion</Link>
+          <Link href="/" className="font-serif text-xl lg:text-2xl font-bold tracking-tight">Sonya Stores</Link>
 
           <div className="hidden lg:flex items-center flex-1 max-w-xl mx-8" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative flex items-center w-full">
@@ -154,19 +131,17 @@ export function Navbar() {
                 </div>
                 {categoriesOpen && (
                   <div className="absolute top-full left-0 mt-1 w-52 bg-background border border-border shadow-lg rounded-sm z-50">
-                    <p className="px-4 pt-3 pb-1 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Collections</p>
-                    <Link href="/shop/men" className="block px-4 py-2.5 text-sm font-medium hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Men</Link>
-                    <Link href="/shop/women" className="block px-4 py-2.5 text-sm font-medium hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Women</Link>
-                    <BabyshopNavLink />
-                    <div className="border-t border-border my-1" />
-                    <p className="px-4 pt-2 pb-1 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Categories</p>
-                    {categories.map((cat) => (
-                      <Link key={cat.id} href={`/shop?category=${cat.slug}`} className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>{cat.name}</Link>
-                    ))}
+                    <p className="px-4 pt-3 pb-1 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Categories</p>
+                    <Link href="/shop?category=womens-shoes" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Women's Shoes</Link>
+                    <Link href="/shop?category=mens-shoes" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Men's Shoes</Link>
+                    <Link href="/shop?category=sneakers" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Sneakers</Link>
+                    <Link href="/shop?category=handbags" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Handbags</Link>
+                    <Link href="/shop?category=home-accessories" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Home Accessories</Link>
+                    <Link href="/shop?category=sandals" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Sandals</Link>
                   </div>
                 )}
               </div>
-              <input type="text" placeholder="Search jeans, jackets, dungarees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 h-10 px-4 bg-secondary text-sm text-foreground placeholder:text-muted-foreground outline-none" />
+              <input type="text" placeholder="Search shoes, handbags, accessories..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 h-10 px-4 bg-secondary text-sm text-foreground placeholder:text-muted-foreground outline-none" />
               <button type="submit" className="h-10 px-4 bg-foreground text-background rounded-r-sm"><Search className="h-4 w-4" /></button>
 
               {showSuggestions && (
@@ -222,7 +197,7 @@ export function Navbar() {
           <div className="lg:hidden pb-3 animate-fade-in-up" ref={mobileSearchRef}>
             <form onSubmit={handleSearch} className="relative">
               <div className="flex items-center border border-border rounded-sm">
-                <input type="text" placeholder="Search jeans, jackets..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 h-10 px-4 bg-background text-sm outline-none" autoFocus />
+                <input type="text" placeholder="Search shoes, bags..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 h-10 px-4 bg-background text-sm outline-none" autoFocus />
                 <button type="submit" className="px-3"><Search className="h-4 w-4" /></button>
               </div>
               {showSuggestions && (
@@ -255,14 +230,14 @@ export function Navbar() {
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex items-center justify-center h-12">
             <nav className="flex items-center gap-8">
-              <Link href="/" className="text-sm font-medium hover:text-muted-foreground transition-colors">Home</Link>
-              <Link href="/shop" className="text-sm font-medium hover:text-muted-foreground transition-colors">Shop</Link>
-              <Link href="/shop/men" className="text-sm font-medium hover:text-muted-foreground transition-colors">Men</Link>
-              <Link href="/shop/women" className="text-sm font-medium hover:text-muted-foreground transition-colors">Women</Link>
-              <BabyshopNavLink />
-              <Link href="/shop?filter=new" className="text-sm font-medium hover:text-muted-foreground transition-colors">New Arrivals</Link>
-              <Link href="/shop?filter=offers" className="text-sm font-medium hover:text-muted-foreground transition-colors">On Offer</Link>
-              <Link href="/track-order" className="text-sm font-medium hover:text-muted-foreground transition-colors">Track My Order</Link>
+              <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">Home</Link>
+              <Link href="/shop" className="text-sm font-medium hover:text-primary transition-colors">Shop All</Link>
+              <Link href="/shop?category=womens-shoes" className="text-sm font-medium hover:text-primary transition-colors">Women's Shoes</Link>
+              <Link href="/shop?category=mens-shoes" className="text-sm font-medium hover:text-primary transition-colors">Men's Shoes</Link>
+              <Link href="/shop?category=handbags" className="text-sm font-medium hover:text-primary transition-colors">Handbags</Link>
+              <Link href="/shop?filter=new" className="text-sm font-medium hover:text-primary transition-colors">New Arrivals</Link>
+              <Link href="/shop?filter=offers" className="text-sm font-medium hover:text-primary transition-colors">On Offer</Link>
+              <Link href="/track-order" className="text-sm font-medium hover:text-primary transition-colors">Track Order</Link>
             </nav>
           </div>
         </div>
