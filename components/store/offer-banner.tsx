@@ -15,7 +15,7 @@ export function OfferBanner() {
             className="relative overflow-hidden rounded-sm min-h-[280px] flex items-center group"
           >
             <Image
-              src="/banners/shoes-collection.jpg"
+              src="/banners/shoes-banner-1.jpg"
               alt="Shoes collection sale"
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"

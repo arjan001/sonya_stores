@@ -26,6 +26,7 @@ export function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState<{ orderNumber: string; paymentMethod?: string } | null>(null)
   const [showMpesa, setShowMpesa] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -33,6 +34,10 @@ export function CheckoutPage() {
     address: "",
     notes: "",
   })
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   useEffect(() => {
     fetch("/api/delivery-locations")
@@ -283,6 +288,22 @@ export function CheckoutPage() {
                 </Button>
               </Link>
             </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <TopBar />
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading checkout...</p>
           </div>
         </main>
         <Footer />
