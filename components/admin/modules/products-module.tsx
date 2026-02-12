@@ -242,7 +242,6 @@ export function ProductsModule() {
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
             {categories.map(cat => (
               <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
             ))}
@@ -369,7 +368,7 @@ export function ProductsModule() {
               </div>
               <div>
                 <label className="text-sm font-medium">Category *</label>
-                <Select value={formData.categoryId} onValueChange={(v) => setFormData({ ...formData, categoryId: v })}>
+                <Select value={formData.categoryId || ""} onValueChange={(v) => setFormData({ ...formData, categoryId: v })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
