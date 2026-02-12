@@ -3,31 +3,28 @@ import { ShopPage } from "@/components/store/shop-page"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Shop Thrift Jeans & Denim | Kallittos Fashions Kenya",
+  title: "Shop All | Sonya Stores Kenya",
   description:
-    "Browse Kallittos Fashions full collection of curated thrift & brand-new mom jeans, skinny jeans, boyfriend jeans, denim shorts, wide-leg denim & more. Best denim designs in Kenya. Filter by category, size, and price. Delivered across Nairobi & Kenya.",
-  alternates: { canonical: "https://kallittofashions.com/shop" },
+    "Browse Sonya Stores full collection of premium shoes, handbags, sneakers and home accessories. Quality footwear and elegant home decor at unbeatable prices. Delivered across Nairobi & Kenya.",
+  alternates: { canonical: "https://sonyastores.com/shop" },
   keywords: [
-    "kallittosfashions shop", "buy thrift jeans online Kenya", "shop denim Nairobi",
-    "mom jeans Kenya", "skinny jeans Nairobi", "boyfriend jeans Kenya", "ripped jeans Kenya",
-    "denim shorts Kenya", "best jeans Kenya", "affordable jeans Nairobi",
-    "mtumba jeans online", "thrift denim collection", "premium thrift jeans",
-    "women jeans Kenya", "plus size jeans Nairobi", "Kenya denim online shop",
+    "sonya stores shop", "buy shoes online Kenya", "shop shoes Nairobi",
+    "women shoes Kenya", "men shoes Nairobi", "sneakers Kenya", "handbags Kenya",
+    "home accessories Kenya", "affordable shoes Nairobi", "quality footwear Kenya",
+    "home decor Nairobi", "premium shoes", "elegant handbags",
   ],
   openGraph: {
-    title: "Shop Thrift Jeans & Denim | Kallittos Fashions Kenya",
-    description: "Best curated thrift & new denim in Kenya. Mom jeans, skinny, boyfriend, shorts & more. Delivered across Nairobi & Kenya.",
-    url: "https://kallittofashions.com/shop",
+    title: "Shop All | Sonya Stores Kenya",
+    description: "Premium shoes, handbags and home accessories at unbeatable prices. Delivered across Nairobi & Kenya.",
+    url: "https://sonyastores.com/shop",
     type: "website",
-    siteName: "Kallittos Fashions",
+    siteName: "Sonya Stores",
     locale: "en_KE",
-    images: [{ url: "https://kallittofashions.com/logo-kf.png", width: 512, height: 512, alt: "Kallittos Fashions Shop" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shop Thrift Jeans & Denim | Kallittos Fashions Kenya",
-    description: "Best curated thrift & new denim in Kenya. Delivered across Nairobi & Kenya.",
-    images: ["https://kallittofashions.com/logo-kf.png"],
+    title: "Shop All | Sonya Stores Kenya",
+    description: "Premium shoes, handbags and home accessories. Delivered across Nairobi & Kenya.",
   },
 }
 

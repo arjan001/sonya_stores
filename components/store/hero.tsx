@@ -4,151 +4,105 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useCallback } from "react"
 import { ArrowRight } from "lucide-react"
-interface HeroBanner {
-  id: string
-  title: string
-  subtitle: string
-  collection: string
-  bannerImage: string
-  linkUrl: string
-  buttonText: string
-  sortOrder: number
-}
 
-const SHOES_CAROUSEL_IMAGES = [
-  "/banners/shoes-banner-1.jpg",
-]
-
-const FALLBACK_BANNERS: HeroBanner[] = [
+const HERO_BANNERS = [
   {
     id: "shoes",
     title: "Quality Shoes for Every Occasion",
     subtitle: "Discover our trusted collection of elegant heels, comfortable sneakers, and stylish sandals at unbeatable prices.",
-    collection: "shoes",
-    bannerImage: "/banners/shoes-banner-1.jpg",
-    linkUrl: "/shop/shoes",
+    image: "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=1200&h=600&fit=crop",
+    linkUrl: "/shop?category=womens-shoes",
     buttonText: "Shop Shoes",
-    sortOrder: 0,
   },
   {
     id: "handbags",
-    title: "Stylish Handbags",
-    subtitle: "Premium handbags and purses to complement your style.",
-    collection: "handbags",
-    bannerImage: "/banners/handbags-banner.jpg",
-    linkUrl: "/shop/handbags",
+    title: "Stylish Handbags & Totes",
+    subtitle: "Premium handbags and crossbody bags to complement your style.",
+    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=1200&h=600&fit=crop",
+    linkUrl: "/shop?category=handbags",
     buttonText: "Shop Handbags",
-    sortOrder: 1,
   },
   {
-    id: "home-decor",
-    title: "Home Decor",
-    subtitle: "Beautiful accessories to transform your living space.",
-    collection: "home-decor",
-    bannerImage: "/banners/home-decor-banner.jpg",
-    linkUrl: "/shop/home-decor",
-    buttonText: "Shop Home Decor",
-    sortOrder: 2,
+    id: "sneakers",
+    title: "Trendy Sneakers Collection",
+    subtitle: "Comfort meets style with our premium sneakers for men and women.",
+    image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=1200&h=600&fit=crop",
+    linkUrl: "/shop?category=sneakers",
+    buttonText: "Shop Sneakers",
   },
 ]
 
-function ShoesCarousel({ banner }: { banner: HeroBanner }) {
+export function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % SHOES_CAROUSEL_IMAGES.length)
+    setCurrentSlide((prev) => (prev + 1) % HERO_BANNERS.length)
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(nextSlide, 4000)
+    const interval = setInterval(nextSlide, 5000)
     return () => clearInterval(interval)
   }, [nextSlide])
 
-  return (
-    <Link
-      href={banner.linkUrl}
-      className="lg:col-span-8 relative overflow-hidden rounded-sm min-h-[400px] lg:min-h-[520px] flex items-end group"
-    >
-      <div className="absolute inset-0 z-0">
-        {SHOES_CAROUSEL_IMAGES.map((src, i) => (
-          <div
-            key={src}
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{ opacity: i === currentSlide ? 1 : 0 }}
-          >
-            <Image
-              src={src}
-              alt={`${banner.title} - carousel slide ${i + 1}`}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
-              priority={i === 0}
-            />
-          </div>
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-      </div>
-      <div className="relative z-10 p-8 lg:p-12 w-full">
-        <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">Quality Footwear</p>
-        <h1 className="text-background text-4xl lg:text-5xl font-serif font-bold leading-tight text-balance">
-          {banner.title}
-        </h1>
-        <p className="text-background/70 text-sm mt-3 leading-relaxed max-w-md">
-          {banner.subtitle}
-        </p>
-        <span className="inline-flex items-center gap-2 mt-5 bg-background text-foreground px-7 py-3 text-sm font-medium group-hover:bg-background/90 transition-colors">
-          {banner.buttonText}
-          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        </span>
-      </div>
-    </Link>
-  )
-}
-
-export function Hero() {
-  const mainBanner = FALLBACK_BANNERS[0]
-  const sideBanners = FALLBACK_BANNERS.slice(1, 3)
+  const mainBanner = HERO_BANNERS[currentSlide]
+  const sideBanners = HERO_BANNERS.filter((_, i) => i !== currentSlide).slice(0, 2)
 
   return (
     <section className="bg-secondary">
       <div className="mx-auto max-w-7xl px-4 py-6 lg:py-0">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
-          {/* Main Banner - Shoes with Carousel */}
-          {mainBanner.collection === "shoes" ? (
-            <ShoesCarousel banner={mainBanner} />
-          ) : (
-            <Link
-              href={mainBanner.linkUrl}
-              className="lg:col-span-8 relative overflow-hidden rounded-sm min-h-[400px] lg:min-h-[520px] flex items-end group"
-            >
-              <div className="absolute inset-0 z-0">
-                <Image
-                  src={mainBanner.bannerImage}
-                  alt={mainBanner.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-              </div>
-              <div className="relative z-10 p-8 lg:p-12 w-full">
-                <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">
-                  {mainBanner.collection === "shoes" ? "Quality Footwear" : "Premium Products"}
-                </p>
-                <h1 className="text-background text-4xl lg:text-5xl font-serif font-bold leading-tight text-balance">
-                  {mainBanner.title}
-                </h1>
-                <p className="text-background/70 text-sm mt-3 leading-relaxed max-w-md">
-                  {mainBanner.subtitle}
-                </p>
-                <span className="inline-flex items-center gap-2 mt-5 bg-background text-foreground px-7 py-3 text-sm font-medium group-hover:bg-background/90 transition-colors">
-                  {mainBanner.buttonText}
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </div>
-            </Link>
-          )}
+          {/* Main Banner */}
+          <Link
+            href={mainBanner.linkUrl}
+            className="lg:col-span-8 relative overflow-hidden rounded-sm min-h-[400px] lg:min-h-[520px] flex items-end group"
+          >
+            <div className="absolute inset-0 z-0">
+              {HERO_BANNERS.map((banner, i) => (
+                <div
+                  key={banner.id}
+                  className="absolute inset-0 transition-opacity duration-700"
+                  style={{ opacity: i === currentSlide ? 1 : 0 }}
+                >
+                  <Image
+                    src={banner.image}
+                    alt={banner.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    priority={i === 0}
+                  />
+                </div>
+              ))}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
+            </div>
+            <div className="relative z-10 p-8 lg:p-12 w-full">
+              <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">Quality Footwear</p>
+              <h1 className="text-background text-4xl lg:text-5xl font-serif font-bold leading-tight text-balance">
+                {mainBanner.title}
+              </h1>
+              <p className="text-background/70 text-sm mt-3 leading-relaxed max-w-md">
+                {mainBanner.subtitle}
+              </p>
+              <span className="inline-flex items-center gap-2 mt-5 bg-background text-foreground px-7 py-3 text-sm font-medium group-hover:bg-background/90 transition-colors">
+                {mainBanner.buttonText}
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </span>
 
-          {/* Side Banners - Handbags & Home Decor */}
+              {/* Dots */}
+              <div className="flex gap-2 mt-6">
+                {HERO_BANNERS.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setCurrentSlide(i) }}
+                    className={`w-2 h-2 rounded-full transition-colors ${i === currentSlide ? "bg-background" : "bg-background/40"}`}
+                    aria-label={`Slide ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </Link>
+
+          {/* Side Banners */}
           <div className="lg:col-span-4 flex flex-col gap-4 lg:gap-6">
             {sideBanners.map((banner) => (
               <Link
@@ -157,11 +111,10 @@ export function Hero() {
                 className="relative overflow-hidden rounded-sm flex-1 min-h-[200px] lg:min-h-0 group flex items-end"
               >
                 <Image
-                  src={banner.bannerImage}
+                  src={banner.image}
                   alt={banner.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/10 to-transparent" />
                 <div className="relative z-10 p-5 w-full">

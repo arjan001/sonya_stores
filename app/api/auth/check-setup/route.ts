@@ -1,12 +1,15 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const supabase = await createClient()
-  const { count } = await supabase
-    .from("admin_users")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "super_admin")
-
-  return NextResponse.json({ hasAdmin: (count || 0) > 0 })
+  try {
+    const result = await query(
+      "SELECT COUNT(*) as count FROM admins WHERE role = 'super_admin'"
+    )
+    const count = parseInt(result.rows[0]?.count || 0)
+    return NextResponse.json({ hasAdmin: count > 0 })
+  } catch (error) {
+    console.error("[v0] Error checking setup:", error)
+    return NextResponse.json({ hasAdmin: false })
+  }
 }

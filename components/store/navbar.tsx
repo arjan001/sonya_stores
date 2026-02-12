@@ -56,7 +56,8 @@ export function Navbar() {
                 <Link href="/shop?category=mens-shoes" className="py-2.5 text-sm border-b border-border pl-3">Men's Shoes</Link>
                 <Link href="/shop?category=sneakers" className="py-2.5 text-sm border-b border-border pl-3">Sneakers</Link>
                 <Link href="/shop?category=handbags" className="py-2.5 text-sm border-b border-border pl-3">Handbags</Link>
-                <Link href="/shop?category=home-accessories" className="py-2.5 text-sm border-b border-border pl-3">Home Accessories</Link>
+                <Link href="/shop?category=home-decor" className="py-2.5 text-sm border-b border-border pl-3">Home Decor</Link>
+                <Link href="/shop?category=sandals" className="py-2.5 text-sm border-b border-border pl-3">Sandals</Link>
                 <Link href="/shop/track-order" className="py-3 text-sm font-medium border-b border-border mt-2">Track My Order</Link>
               </nav>
               <div className="px-6 py-4 mt-4 space-y-3">
@@ -82,7 +83,7 @@ export function Navbar() {
                     <Link href="/shop?category=mens-shoes" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Men's Shoes</Link>
                     <Link href="/shop?category=sneakers" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Sneakers</Link>
                     <Link href="/shop?category=handbags" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Handbags</Link>
-                    <Link href="/shop?category=home-accessories" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Home Accessories</Link>
+                    <Link href="/shop?category=home-decor" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Home Decor</Link>
                     <Link href="/shop?category=sandals" className="block px-4 py-2.5 text-sm hover:bg-secondary transition-colors" onClick={() => setCategoriesOpen(false)}>Sandals</Link>
                   </div>
                 )}

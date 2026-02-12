@@ -1,349 +1,194 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import type { Product, Category, DeliveryLocation, Offer, HeroBanner } from "./types"
 
 export function formatPrice(price: number): string {
   return `KSh ${price.toLocaleString()}`
 }
 
-function mapProduct(row: Record<string, unknown>, images: Record<string, unknown>[], variations: Record<string, unknown>[], productTags: Record<string, string[]> = {}): Product {
-  const productImages = images
-    .filter((img) => img.product_id === row.id)
-    .sort((a, b) => (a.sort_order as number) - (b.sort_order as number))
-    .map((img) => img.url as string)
+function mapProduct(row: Record<string, unknown>): Product {
+  let images: string[] = ["/placeholder.svg?height=800&width=600"]
+  if (row.images) {
+    try {
+      const parsed = typeof row.images === "string" ? JSON.parse(row.images) : row.images
+      if (Array.isArray(parsed) && parsed.length > 0) images = parsed
+    } catch { /* fallback */ }
+  } else if (row.image_url) {
+    images = [row.image_url as string]
+  }
 
-  const productVariations = variations
-    .filter((v) => v.product_id === row.id)
-    .reduce<Record<string, Set<string>>>((acc, v) => {
-      const label = v.label as string
-      if (!acc[label]) acc[label] = new Set()
-      acc[label].add(v.value as string)
-      return acc
-    }, {})
+  let tags: string[] = []
+  if (row.tags) {
+    try {
+      tags = typeof row.tags === "string" ? JSON.parse(row.tags) : (row.tags as string[])
+    } catch { /* fallback */ }
+  }
 
-  const variationsList = Object.entries(productVariations).map(([type, options]) => ({
-    type,
-    options: Array.from(options),
-  }))
+  const salePrice = row.discount_price ? Number(row.discount_price) : null
+  const basePrice = Number(row.price)
 
   return {
     id: row.id as string,
     name: row.name as string,
     slug: row.slug as string,
-    price: Number(row.price),
-    originalPrice: row.original_price ? Number(row.original_price) : undefined,
-    images: productImages.length > 0 ? productImages : ["/placeholder.svg?height=800&width=600"],
-    category: (row as Record<string, unknown> & { categories?: { name: string; slug: string } }).categories?.name || "",
-    categorySlug: (row as Record<string, unknown> & { categories?: { name: string; slug: string } }).categories?.slug || "",
+    price: salePrice || basePrice,
+    originalPrice: salePrice ? basePrice : undefined,
+    images,
+    category: (row.category_name as string) || "",
+    categorySlug: (row.category_slug as string) || "",
     description: (row.description as string) || "",
-    variations: variationsList.length > 0 ? variationsList : undefined,
-    tags: productTags[row.id as string] || [],
-    collection: (row.collection as string) || "unisex",
-    isNew: row.is_new as boolean,
-    isOnOffer: row.is_on_offer as boolean,
-    offerPercentage: row.offer_percentage ? Number(row.offer_percentage) : undefined,
-    inStock: row.in_stock as boolean,
+    tags,
+    isNew: (row.is_new as boolean) || false,
+    isOnOffer: (row.is_on_sale as boolean) || false,
+    offerPercentage: salePrice ? Math.round((1 - salePrice / basePrice) * 100) : undefined,
+    inStock: Number(row.stock_quantity ?? 0) > 0,
     createdAt: (row.created_at as string) || "",
   }
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = await createClient()
-
-  const [productsRes, imagesRes, variationsRes, productTagsRes] = await Promise.all([
-    supabase.from("products").select("*, categories(name, slug)").order("sort_order", { ascending: true }),
-    supabase.from("product_images").select("*").order("sort_order", { ascending: true }),
-    supabase.from("product_variations").select("*"),
-    supabase.from("product_tags").select("product_id, tags(name)"),
-  ])
-
-  if (!productsRes.data) return []
-
-  const tagMap: Record<string, string[]> = {}
-  for (const pt of productTagsRes.data || []) {
-    const pid = pt.product_id as string
-    const tagName = (pt as Record<string, unknown> & { tags?: { name: string } }).tags?.name
-    if (tagName) {
-      if (!tagMap[pid]) tagMap[pid] = []
-      tagMap[pid].push(tagName)
-    }
+  try {
+    const result = await query(
+      `SELECT p.*, c.name as category_name, c.slug as category_slug
+       FROM products p
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.status = 'active'
+       ORDER BY p.is_featured DESC NULLS LAST, p.created_at DESC`
+    )
+    return result.rows.map(mapProduct)
+  } catch (error) {
+    console.error("[v0] Error fetching products:", error)
+    return []
   }
-
-  return productsRes.data.map((row) =>
-    mapProduct(row, imagesRes.data || [], variationsRes.data || [], tagMap)
-  )
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const supabase = await createClient()
-
-  const { data: row } = await supabase
-    .from("products")
-    .select("*, categories(name, slug)")
-    .eq("slug", slug)
-    .single()
-
-  if (!row) return null
-
-  const [imagesRes, variationsRes, ptRes] = await Promise.all([
-    supabase.from("product_images").select("*").eq("product_id", row.id).order("sort_order", { ascending: true }),
-    supabase.from("product_variations").select("*").eq("product_id", row.id),
-    supabase.from("product_tags").select("product_id, tags(name)").eq("product_id", row.id),
-  ])
-
-  const tagMap: Record<string, string[]> = {}
-  for (const pt of ptRes.data || []) {
-    const pid = pt.product_id as string
-    const tagName = (pt as Record<string, unknown> & { tags?: { name: string } }).tags?.name
-    if (tagName) {
-      if (!tagMap[pid]) tagMap[pid] = []
-      tagMap[pid].push(tagName)
-    }
+  try {
+    const result = await query(
+      `SELECT p.*, c.name as category_name, c.slug as category_slug
+       FROM products p
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.slug = $1`,
+      [slug]
+    )
+    return result.rows.length > 0 ? mapProduct(result.rows[0]) : null
+  } catch (error) {
+    console.error("[v0] Error fetching product by slug:", error)
+    return null
   }
-
-  return mapProduct(row, imagesRes.data || [], variationsRes.data || [], tagMap)
 }
 
 export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
-  const supabase = await createClient()
-
-  const { data: category } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("slug", categorySlug)
-    .single()
-
-  if (!category) return []
-
-  const [productsRes, imagesRes, variationsRes] = await Promise.all([
-    supabase.from("products").select("*, categories(name, slug)").eq("category_id", category.id),
-    supabase.from("product_images").select("*"),
-    supabase.from("product_variations").select("*"),
-  ])
-
-  if (!productsRes.data) return []
-
-  return productsRes.data.map((row) =>
-    mapProduct(row, imagesRes.data || [], variationsRes.data || [])
-  )
+  try {
+    const result = await query(
+      `SELECT p.*, c.name as category_name, c.slug as category_slug
+       FROM products p
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE c.slug = $1 AND p.status = 'active'
+       ORDER BY p.created_at DESC`,
+      [categorySlug]
+    )
+    return result.rows.map(mapProduct)
+  } catch (error) {
+    console.error("[v0] Error fetching products by category:", error)
+    return []
+  }
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient()
-
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-
-  if (!categories) return []
-
-  // Get product counts per category
-  const { data: products } = await supabase
-    .from("products")
-    .select("category_id")
-
-  const countMap: Record<string, number> = {}
-  for (const p of products || []) {
-    countMap[p.category_id] = (countMap[p.category_id] || 0) + 1
+  try {
+    const result = await query(
+      `SELECT c.id, c.name, c.slug, c.image_url, c.sort_order,
+              (SELECT COUNT(*) FROM products WHERE category_id = c.id AND status = 'active') as product_count
+       FROM categories c
+       WHERE c.is_active = true
+       ORDER BY c.sort_order ASC`
+    )
+    return result.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      image: row.image_url || "/placeholder.svg?height=500&width=400",
+      productCount: parseInt(row.product_count) || 0,
+    }))
+  } catch (error) {
+    console.error("[v0] Error fetching categories:", error)
+    return []
   }
-
-  return categories.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    slug: cat.slug,
-    image: cat.image_url || "/placeholder.svg?height=500&width=400",
-    productCount: countMap[cat.id] || 0,
-  }))
 }
 
 export async function getDeliveryLocations(): Promise<DeliveryLocation[]> {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("delivery_locations")
-    .select("*")
-    .eq("is_active", true)
-    .order("fee", { ascending: true })
-
-  if (!data) return []
-
-  return data.map((loc) => ({
-    id: loc.id,
-    name: loc.name,
-    fee: Number(loc.fee),
-    estimatedDays: loc.estimated_days || "",
-  }))
+  try {
+    const result = await query(
+      `SELECT id, name, cost, delivery_time_days FROM delivery_settings WHERE is_active = true ORDER BY cost ASC`
+    )
+    return result.rows.map((row) => ({
+      id: row.id, name: row.name, fee: Number(row.cost),
+      estimatedDays: row.delivery_time_days?.toString() || "",
+    }))
+  } catch { return [] }
 }
 
 export async function getNavbarOffers(): Promise<string[]> {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("navbar_offers")
-    .select("text")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-
-  return data?.map((o) => o.text) || []
+  try {
+    const result = await query(`SELECT title FROM offers WHERE is_active = true ORDER BY created_at DESC LIMIT 3`)
+    return result.rows.map((row) => row.title)
+  } catch { return [] }
 }
 
 export async function getPopupOffer(): Promise<Offer | null> {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("popup_offers")
-    .select("*")
-    .eq("is_active", true)
-    .limit(1)
-    .single()
-
-  if (!data) return null
-
-  return {
-    id: data.id,
-    title: data.title,
-    description: data.description || "",
-    discount: data.discount_percentage ? `${data.discount_percentage}% OFF` : "",
-    image: data.image_url || "",
-    validUntil: "2026-06-30",
-  }
+  try {
+    const result = await query(
+      `SELECT id, title, description, discount_percentage FROM offers WHERE is_active = true ORDER BY created_at DESC LIMIT 1`
+    )
+    if (result.rows.length === 0) return null
+    const row = result.rows[0]
+    return { id: row.id, title: row.title, description: row.description || "",
+      discount: row.discount_percentage ? `${row.discount_percentage}% OFF` : "",
+      image: "", validUntil: "2026-12-31" }
+  } catch { return null }
 }
 
 export async function getSiteSettings() {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("site_settings")
-    .select("*")
-    .limit(1)
-    .single()
-
-  return data
+  try {
+    const result = await query(`SELECT key, value FROM settings LIMIT 20`)
+    const settings: Record<string, unknown> = {}
+    result.rows.forEach((row) => { settings[row.key] = row.value })
+    return settings
+  } catch { return {} }
 }
 
 export async function createOrder(order: {
-  customerName: string
-  customerEmail?: string
-  customerPhone: string
-  deliveryLocationId?: string
-  deliveryAddress: string
-  deliveryFee: number
-  subtotal: number
-  total: number
-  notes?: string
-  orderedVia: string
-  paymentMethod?: string
-  mpesaCode?: string
-  mpesaPhone?: string
-  mpesaMessage?: string
-  items: {
-    productId: string
-    productName: string
-    productImage?: string
-    variation?: string
-    quantity: number
-    unitPrice: number
-    totalPrice: number
-  }[]
+  customerName: string; customerPhone: string; deliveryAddress: string;
+  deliveryFee: number; subtotal: number; total: number; notes?: string;
+  items: { productId: string; quantity: number; unitPrice: number }[]
 }) {
-  const supabase = await createClient()
-
-  // Generate order number
-  const orderNumber = `KF-${Date.now().toString(36).toUpperCase()}`
-
-  const { data: orderData, error: orderError } = await supabase
-    .from("orders")
-    .insert({
-      order_number: orderNumber,
-      customer_name: order.customerName,
-      customer_email: order.customerEmail || null,
-      customer_phone: order.customerPhone,
-      delivery_location_id: order.deliveryLocationId || null,
-      delivery_address: order.deliveryAddress,
-      delivery_fee: order.deliveryFee,
-      subtotal: order.subtotal,
-      total: order.total,
-      notes: order.notes || null,
-      ordered_via: order.orderedVia,
-      payment_method: order.paymentMethod || "cod",
-      mpesa_code: order.mpesaCode || null,
-      mpesa_phone: order.mpesaPhone || null,
-      mpesa_message: order.mpesaMessage || null,
-      status: "pending",
-    })
-    .select()
-    .single()
-
-  if (orderError) throw orderError
-
-  // Insert order items
-  const orderItems = order.items.map((item) => ({
-    order_id: orderData.id,
-    product_id: item.productId,
-    product_name: item.productName,
-    product_image: item.productImage || null,
-    variation: item.variation || null,
-    quantity: item.quantity,
-    unit_price: item.unitPrice,
-    total_price: item.totalPrice,
-  }))
-
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .insert(orderItems)
-
-  if (itemsError) throw itemsError
-
-  return { orderNumber: orderData.order_number, orderId: orderData.id }
+  const orderNumber = `SS-${Date.now().toString(36).toUpperCase()}`
+  const orderResult = await query(
+    `INSERT INTO orders (order_number, shipping_address, shipping_amount, total_amount, notes, status, payment_status)
+     VALUES ($1, $2, $3, $4, $5, 'pending', 'pending') RETURNING id`,
+    [orderNumber, order.deliveryAddress, order.deliveryFee, order.total, order.notes || null]
+  )
+  const orderId = orderResult.rows[0].id
+  for (const item of order.items) {
+    await query(
+      `INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) VALUES ($1, $2, $3, $4, $5)`,
+      [orderId, item.productId, item.quantity, item.unitPrice, item.quantity * item.unitPrice]
+    )
+  }
+  return { orderNumber, orderId }
 }
 
 export async function getHeroBanners(): Promise<HeroBanner[]> {
-  const supabase = await createClient()
-
-  const { data } = await supabase
-    .from("hero_banners")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-
-  if (!data) return []
-
-  return data.map((b) => ({
-    id: b.id,
-    title: b.title,
-    subtitle: b.subtitle || "",
-    collection: b.collection,
-    bannerImage: b.banner_image || `/banners/${b.collection}-collection.jpg`,
-    linkUrl: b.link_url,
-    buttonText: b.button_text || "Shop Now",
-    sortOrder: b.sort_order,
-  }))
+  try {
+    const result = await query(`SELECT * FROM banners WHERE is_active = true ORDER BY sort_order ASC`)
+    return result.rows.map((row) => ({
+      id: row.id, title: row.title || "", subtitle: "", collection: "",
+      bannerImage: row.image_url || "/placeholder.svg?height=600&width=1200",
+      linkUrl: row.link_url || "/shop", buttonText: "Shop Now", sortOrder: row.sort_order || 0,
+    }))
+  } catch { return [] }
 }
 
 export async function getProductsByCollection(collection: string): Promise<Product[]> {
-  const supabase = await createClient()
-
-  const [productsRes, imagesRes, variationsRes, productTagsRes] = await Promise.all([
-    supabase.from("products").select("*, categories(name, slug)").eq("collection", collection).order("sort_order", { ascending: true }),
-    supabase.from("product_images").select("*").order("sort_order", { ascending: true }),
-    supabase.from("product_variations").select("*"),
-    supabase.from("product_tags").select("product_id, tags(name)"),
-  ])
-
-  if (!productsRes.data) return []
-
-  const tagMap: Record<string, string[]> = {}
-  for (const pt of productTagsRes.data || []) {
-    const pid = pt.product_id as string
-    const tagName = (pt as Record<string, unknown> & { tags?: { name: string } }).tags?.name
-    if (tagName) {
-      if (!tagMap[pid]) tagMap[pid] = []
-      tagMap[pid].push(tagName)
-    }
-  }
-
-  return productsRes.data.map((row) =>
-    mapProduct(row, imagesRes.data || [], variationsRes.data || [], tagMap)
-  )
+  return getProductsByCategory(collection)
 }

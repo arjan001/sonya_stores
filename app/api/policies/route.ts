@@ -1,13 +1,12 @@
-import { createAdminClient } from "@/lib/supabase/admin"
+import { query } from "@/lib/db"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from("policies")
-    .select("*")
-    .order("title")
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  try {
+    const result = await query("SELECT * FROM policies ORDER BY title ASC")
+    return NextResponse.json(result.rows)
+  } catch (error) {
+    console.error("[v0] Error fetching policies:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }

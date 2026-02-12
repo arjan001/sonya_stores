@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter, Playfair_Display } from "next/font/google"
 import { CartProvider } from "@/lib/cart-context"
 import { WishlistProvider } from "@/lib/wishlist-context"
+import { CartDrawer } from "@/components/store/cart-drawer"
 import { Toaster } from "@/components/ui/sonner"
 import { PageViewTracker } from "@/components/page-view-tracker"
 import "./globals.css"
@@ -129,7 +130,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <WishlistProvider><CartProvider>{children}</CartProvider></WishlistProvider>
+        <WishlistProvider><CartProvider>{children}<CartDrawer /></CartProvider></WishlistProvider>
         <PageViewTracker />
         <Toaster position="top-right" richColors closeButton />
       </body>

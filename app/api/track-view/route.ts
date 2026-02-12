@@ -1,4 +1,4 @@
-import { createAdminClient as createClient } from "@/lib/supabase/admin"
+import { query } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { UAParser } from "ua-parser-js"
 import { rateLimit, rateLimitResponse, sanitize } from "@/lib/security"
@@ -25,25 +25,24 @@ export async function POST(request: NextRequest) {
     const country = request.headers.get("x-vercel-ip-country") || ""
     const city = request.headers.get("x-vercel-ip-city") || ""
 
-    const supabase = createClient()
-    const { error } = await supabase.from("page_views").insert({
-      page_path: sanitize(body.path || "/", 500),
-      referrer: sanitize(body.referrer || "", 2000),
-      user_agent: userAgent.slice(0, 500),
-      country,
-      city,
-      device_type: deviceType,
-      browser,
-      session_id: sanitize(body.sessionId || "", 100),
-    })
-
-    if (error) {
-      console.error("Failed to track view:", error)
-      return NextResponse.json({ error: "Failed" }, { status: 500 })
-    }
+    await query(
+      `INSERT INTO page_views (page_path, referrer, user_agent, country, city, device_type, browser, session_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)`,
+      [
+        sanitize(body.path || "/", 500),
+        sanitize(body.referrer || "", 2000),
+        userAgent.slice(0, 500),
+        country,
+        city,
+        deviceType,
+        browser,
+        sanitize(body.sessionId || "", 100),
+      ]
+    )
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
+    console.error("[v0] Failed to track view:", error)
     return NextResponse.json({ error: "Failed" }, { status: 500 })
   }
 }

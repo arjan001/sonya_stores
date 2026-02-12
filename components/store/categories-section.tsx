@@ -2,17 +2,16 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import type { Category } from "@/lib/types"
+import useSWR from "swr"
 
-const STATIC_CATEGORIES = [
-  { name: "Women's Shoes", slug: "womens-shoes", image: "/categories/womens-shoes.jpg" },
-  { name: "Men's Shoes", slug: "mens-shoes", image: "/categories/mens-shoes.jpg" },
-  { name: "Sneakers", slug: "sneakers", image: "/categories/sneakers.jpg" },
-  { name: "Handbags", slug: "handbags", image: "/categories/handbags.jpg" },
-  { name: "Home Accessories", slug: "home-accessories", image: "/categories/home-accessories.jpg" },
-  { name: "Sandals", slug: "sandals", image: "/categories/sandals.jpg" },
-]
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export function CategoriesSection() {
+  const { data: categories = [] } = useSWR<Category[]>("/api/categories", fetcher)
+
+  if (categories.length === 0) return null
+
   return (
     <section className="py-14 lg:py-20 bg-background">
       <div className="mx-auto max-w-7xl px-4">
@@ -33,7 +32,7 @@ export function CategoriesSection() {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6">
-          {STATIC_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <Link
               key={category.slug}
               href={`/shop?category=${category.slug}`}
@@ -41,14 +40,21 @@ export function CategoriesSection() {
             >
               <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary ring-1 ring-border group-hover:ring-primary transition-all">
                 <Image
-                  src={category.image}
+                  src={category.image || "/placeholder.svg?height=500&width=400"}
                   alt={category.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-foreground/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <h3 className="text-sm font-medium mt-3 text-center leading-tight group-hover:text-primary transition-colors">{category.name}</h3>
+              <h3 className="text-sm font-medium mt-3 text-center leading-tight group-hover:text-primary transition-colors">
+                {category.name}
+              </h3>
+              {category.productCount > 0 && (
+                <p className="text-xs text-muted-foreground text-center mt-0.5">
+                  {category.productCount} items
+                </p>
+              )}
             </Link>
           ))}
         </div>

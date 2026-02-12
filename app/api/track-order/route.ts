@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { rateLimit, rateLimitResponse, sanitizePhoneSearch } from "@/lib/security"
 
@@ -15,19 +15,46 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Provide order number or phone number" }, { status: 400 })
   }
 
-  const supabase = await createClient()
+  try {
+    let orders = []
 
-  let query = supabase
-    .from("orders")
-    .select("*, delivery_locations(name)")
-    .order("created_at", { ascending: false })
+    if (orderNumber) {
+      const result = await query(
+        `SELECT o.*, json_agg(json_build_object('product_name', oi.product_name, 'quantity', oi.quantity, 'unit_price', oi.unit_price)) as items
+         FROM orders o
+         LEFT JOIN order_items oi ON o.id = oi.order_id
+         WHERE o.order_number = $1
+         GROUP BY o.id
+         ORDER BY o.created_at DESC`,
+        [orderNumber]
+      )
+      orders = result.rows
+    } else if (phone) {
+      // Sanitize phone to prevent injection
+      const cleanPhone = sanitizePhoneSearch(phone).replace(/^(\+?254|0)/, "")
+      if (cleanPhone.length < 6) {
+        return NextResponse.json({ error: "Phone number too short" }, { status: 400 })
+      }
 
-  if (orderNumber) {
-    query = query.eq("order_number", orderNumber)
-  } else if (phone) {
-    // Sanitize phone to prevent wildcard injection
-    const cleanPhone = sanitizePhoneSearch(phone).replace(/^(\+?254|0)/, "")
-    if (cleanPhone.length < 6) {
+      const result = await query(
+        `SELECT o.*, json_agg(json_build_object('product_name', oi.product_name, 'quantity', oi.quantity, 'unit_price', oi.unit_price)) as items
+         FROM orders o
+         LEFT JOIN order_items oi ON o.id = oi.order_id
+         WHERE o.customer_phone LIKE $1
+         GROUP BY o.id
+         ORDER BY o.created_at DESC
+         LIMIT 5`,
+        [`%${cleanPhone}%`]
+      )
+      orders = result.rows
+    }
+
+    return NextResponse.json({ orders })
+  } catch (error) {
+    console.error("[v0] Error tracking order:", error)
+    return NextResponse.json({ error: "Failed to track order" }, { status: 500 })
+  }
+}
       return NextResponse.json({ error: "Phone number too short" }, { status: 400 })
     }
     query = query.or(`customer_phone.ilike.%${cleanPhone}%`)

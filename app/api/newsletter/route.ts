@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
 import { rateLimit, rateLimitResponse, sanitize, isValidEmail } from "@/lib/security"
 
@@ -15,14 +15,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid email required" }, { status: 400 })
     }
 
-    const supabase = await createClient()
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .upsert({ email: cleanEmail }, { onConflict: "email" })
+    await query(
+      `INSERT INTO newsletter_subscribers (email, subscribed_at, is_active)
+       VALUES ($1, CURRENT_TIMESTAMP, true)
+       ON CONFLICT (email) DO UPDATE SET is_active = true`,
+      [cleanEmail]
+    )
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
+    console.error("[v0] Error subscribing to newsletter:", error)
     return NextResponse.json({ error: "Failed to subscribe" }, { status: 500 })
   }
 }

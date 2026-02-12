@@ -1,32 +1,60 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import { NextResponse, type NextRequest } from "next/server"
+import { jwtVerify } from "jose"
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
+
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    await jwtVerify(token, secret)
+    return true
+  } catch {
+    return null
+  }
+}
 
 export async function GET() {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from("hero_banners")
-    .select("*")
-    .order("sort_order", { ascending: true })
-  return NextResponse.json(data || [])
+  try {
+    const result = await query(
+      "SELECT * FROM banners ORDER BY sort_order ASC"
+    )
+    return NextResponse.json(result.rows || [])
+  } catch (error) {
+    console.error("[v0] Banners fetch error:", error)
+    return NextResponse.json([], { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const body = await req.json()
+  try {
+    const isAdmin = await verifyAdmin(req)
+    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { error } = await supabase.from("hero_banners").insert({
-    title: body.title,
-    subtitle: body.subtitle || null,
-    collection: body.collection,
-    banner_image: body.bannerImage || null,
-    link_url: body.linkUrl || `/shop/${body.collection}`,
-    button_text: body.buttonText || "Shop Now",
-    is_active: body.isActive ?? true,
-    sort_order: body.sortOrder ?? 0,
-  })
+    const body = await req.json()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ success: true })
+    const result = await query(
+      `INSERT INTO banners (title, description, category, image_url, link_url, cta_text, is_active, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [
+        body.title,
+        body.subtitle || null,
+        body.collection,
+        body.bannerImage || null,
+        body.linkUrl || `/shop/${body.collection}`,
+        body.buttonText || "Shop Now",
+        body.isActive ?? true,
+        body.sortOrder ?? 0,
+      ]
+    )
+
+    return NextResponse.json(result.rows[0], { status: 201 })
+  } catch (error) {
+    console.error("[v0] Banner create error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
 
 export async function PUT(req: NextRequest) {
