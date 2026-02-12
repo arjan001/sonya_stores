@@ -227,6 +227,27 @@ export async function getHeroBanners(): Promise<HeroBanner[]> {
   } catch { return [] }
 }
 
+export async function searchProducts(query: string, limit = 100, offset = 0): Promise<Product[]> {
+  try {
+    if (query.length < 2) return []
+    const searchTerm = `%${query}%`
+    const result = await query(
+      `SELECT p.*, c.name as category_name, c.slug as category_slug
+       FROM products p
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.status = 'active'
+       AND (p.name ILIKE $1 OR p.description ILIKE $1 OR p.tags::text ILIKE $1)
+       ORDER BY p.is_featured DESC NULLS LAST, p.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [searchTerm, limit, offset]
+    )
+    return result.rows.map(mapProduct)
+  } catch (error) {
+    console.error("[v0] Error searching products:", error)
+    return []
+  }
+}
+
 export async function getProductsByCollection(collection: string): Promise<Product[]> {
   return getProductsByCategory(collection)
 }
