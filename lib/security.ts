@@ -61,22 +61,36 @@ export async function requireAuth(): Promise<{
   response?: NextResponse
 }> {
   try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // Use cookies instead of Supabase auth for JWT verification
+    const { cookies } = await import("next/headers")
+    const cookieStore = await cookies()
+    const token = cookieStore.get("admin_token")?.value
 
-    if (!user) {
+    if (!token) {
       return {
         authenticated: false,
         response: NextResponse.json(
-          { error: "Unauthorized" },
+          { error: "Unauthorized: No token" },
           { status: 401 }
         ),
       }
     }
+
+    // Basic token validation - check if it's a valid JWT-like string
+    const parts = token.split(".")
+    if (parts.length !== 3) {
+      return {
+        authenticated: false,
+        response: NextResponse.json(
+          { error: "Unauthorized: Invalid token format" },
+          { status: 401 }
+        ),
+      }
+    }
+
     return { authenticated: true }
-  } catch {
+  } catch (error) {
+    console.error("[v0] Auth error:", error)
     return {
       authenticated: false,
       response: NextResponse.json(
