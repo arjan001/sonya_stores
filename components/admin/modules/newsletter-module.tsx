@@ -42,11 +42,15 @@ export function NewsletterModule() {
         headers: { 'Content-Type': 'application/json' },
       })
       if (!res.ok) throw new Error("Failed to fetch")
-      const { subscribers: data, total: count } = await res.json()
-      setSubscribers(data)
-      setTotal(count)
+      const data = await res.json()
+      // Handle both array and { subscribers } formats
+      const subscribersList = Array.isArray(data) ? data : (data.subscribers || [])
+      setSubscribers(subscribersList)
+      setTotal(data.total || subscribersList.length)
     } catch (error) {
       console.error("[v0] Error:", error)
+      setSubscribers([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }

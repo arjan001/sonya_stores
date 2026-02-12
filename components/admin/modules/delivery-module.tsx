@@ -131,6 +131,51 @@ export function DeliveryModule() {
           <p>No delivery options</p>
         </div>
       ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted">
+              <tr>
+                <th className="px-6 py-3 text-left font-medium">Name</th>
+                <th className="px-6 py-3 text-center font-medium">Delivery Time</th>
+                <th className="px-6 py-3 text-right font-medium">Cost (KSh)</th>
+                <th className="px-6 py-3 text-center font-medium">Status</th>
+                <th className="px-6 py-3 text-center font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deliveries.map((delivery) => (
+                <tr key={delivery.id} className="border-t hover:bg-muted/50">
+                  <td className="px-6 py-3">
+                    <div>
+                      <p className="font-medium">{delivery.name}</p>
+                      {delivery.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{delivery.description}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-3 text-center">{delivery.delivery_time_days} day(s)</td>
+                  <td className="px-6 py-3 text-right font-semibold">KSh {delivery.cost.toFixed(2)}</td>
+                  <td className="px-6 py-3 text-center">
+                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                      delivery.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {delivery.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-center flex gap-2 justify-center">
+                    <Button size="sm" variant="ghost" onClick={() => handleEdit(delivery)}>
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleDelete(delivery.id)} className="text-red-500">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {deliveries.map((delivery) => (
             <div key={delivery.id} className="border rounded-lg p-4 hover:shadow-md transition">
@@ -161,8 +206,7 @@ export function DeliveryModule() {
               </div>
             </div>
           ))}
-        </div>
-      )}
+        </div>}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>

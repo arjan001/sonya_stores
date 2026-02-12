@@ -202,7 +202,25 @@ export function OffersModule() {
                     </span>
                   </td>
                   <td className="px-6 py-3 text-center flex gap-2 justify-center">
-                    <Button size="sm" variant="ghost" onClick={() => handleSave}>
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      const offer = offers.find(o => o.id === offer.id)
+                      if (offer) {
+                        setFormData({
+                          title: offer.title,
+                          description: offer.description || '',
+                          discount_percentage: offer.discount_percentage || 0,
+                          discount_amount: offer.discount_amount || 0,
+                          applies_to: offer.applies_to,
+                          product_id: offer.product_id || '',
+                          category_id: offer.category_id || '',
+                          start_date: offer.start_date,
+                          end_date: offer.end_date,
+                          is_active: offer.is_active,
+                        })
+                        setEditingId(offer.id)
+                        setIsDialogOpen(true)
+                      }
+                    }}>
                       <Edit2 className="h-4 w-4" />
                     </Button>
                     <Button

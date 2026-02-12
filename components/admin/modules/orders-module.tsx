@@ -166,8 +166,8 @@ export function OrdersModule() {
             className="flex-1"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }}>
-          <SelectTrigger>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }} suppressHydrationWarning>
+          <SelectTrigger suppressHydrationWarning>
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
