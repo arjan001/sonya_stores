@@ -107,31 +107,6 @@ export function ProductsModule() {
       setLoading(false)
     }
   }
-    } catch (error) {
-      console.error("[v0] Error fetching categories:", error)
-    }
-  }
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        limit: String(pageSize),
-        offset: String(page * pageSize),
-        ...(searchTerm && { search: searchTerm }),
-        ...(selectedCategory && { categoryId: selectedCategory }),
-      })
-      const res = await fetch(`/api/admin/products?${params}`)
-      if (!res.ok) throw new Error("Failed to fetch products")
-      const { products: data, total: count } = await res.json()
-      setProducts(data)
-      setTotal(count)
-    } catch (error) {
-      console.error("[v0] Error fetching products:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleSave = async () => {
     if (!formData.name || !formData.categoryId || !formData.price) {
@@ -168,7 +143,10 @@ export function ProductsModule() {
 
   const handleEdit = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/products?id=${id}`)
+      const res = await fetch(`/api/admin/products?id=${id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const product = await res.json()
         setFormData({
