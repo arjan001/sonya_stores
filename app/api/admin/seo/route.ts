@@ -1,58 +1,66 @@
-import { createClient } from "@/lib/supabase/server"
+import { query } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, rateLimit, rateLimitResponse } from "@/lib/security"
+import { jwtVerify } from "jose"
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
+
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    await jwtVerify(token, secret)
+    return true
+  } catch {
+    return null
+  }
+}
 
 export async function GET(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 30, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("seo_pages")
-    .select("*")
-    .order("page_path")
+  try {
+    const isAdmin = await verifyAdmin(request)
+    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+    const result = await query("SELECT * FROM seo_pages ORDER BY page_path")
+    return NextResponse.json(result.rows)
+  } catch (error) {
+    console.error("[v0] SEO fetch error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const body = await request.json()
+  try {
+    const isAdmin = await verifyAdmin(request)
+    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { error } = await supabase
-    .from("seo_pages")
-    .upsert({
-      id: body.id || undefined,
-      page_path: body.page_path,
-      page_title: body.page_title,
-      meta_title: body.meta_title,
-      meta_description: body.meta_description,
-      meta_keywords: body.meta_keywords,
-      og_title: body.og_title,
-      og_description: body.og_description,
-      og_image: body.og_image,
-      canonical_url: body.canonical_url,
-      no_index: body.no_index ?? false,
-      no_follow: body.no_follow ?? false,
-      structured_data: body.structured_data,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "page_path" })
+    const body = await request.json()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+    const result = await query(
+      `INSERT INTO seo_pages (page_path, meta_title, meta_description, meta_keywords)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (page_path) DO UPDATE SET meta_title = $2, meta_description = $3, meta_keywords = $4
+       RETURNING *`,
+      [body.page_path, body.meta_title, body.meta_description, body.meta_keywords]
+    )
+
+    return NextResponse.json(result.rows[0])
+  } catch (error) {
+    console.error("[v0] SEO update error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const { id } = await request.json()
+  try {
+    const isAdmin = await verifyAdmin(request)
+    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { error } = await supabase.from("seo_pages").delete().eq("id", id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+    const { id } = await request.json()
+
+    await query("DELETE FROM seo_pages WHERE id = $1", [id])
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("[v0] SEO delete error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
