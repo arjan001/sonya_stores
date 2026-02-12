@@ -42,7 +42,7 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               type="button"
-              onClick={(e) => { e.preventDefault(); toggleItem(product) }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleItem(product) }}
               className="w-9 h-9 flex items-center justify-center bg-background rounded-full shadow-sm hover:bg-secondary transition-colors"
               aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
             >
@@ -63,6 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
               type="button"
               onClick={(e) => {
                 e.preventDefault()
+                e.stopPropagation()
                 addItem(product)
               }}
               className="w-full flex items-center justify-center gap-2 bg-foreground text-background py-2.5 text-xs font-medium uppercase tracking-wider hover:bg-foreground/90 transition-colors"

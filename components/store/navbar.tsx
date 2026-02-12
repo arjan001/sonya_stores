@@ -57,6 +57,7 @@ export function Navbar() {
                 <Link href="/shop?category=sneakers" className="py-2.5 text-sm border-b border-border pl-3">Sneakers</Link>
                 <Link href="/shop?category=handbags" className="py-2.5 text-sm border-b border-border pl-3">Handbags</Link>
                 <Link href="/shop?category=home-decor" className="py-2.5 text-sm border-b border-border pl-3">Home Decor</Link>
+                <Link href="/shop?category=sandals" className="py-2.5 text-sm border-b border-border pl-3">Sandals</Link>
                 <Link href="/shop/track-order" className="py-3 text-sm font-medium border-b border-border mt-2">Track My Order</Link>
               </nav>
               <div className="px-6 py-4 mt-4 space-y-3">
