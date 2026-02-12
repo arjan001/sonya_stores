@@ -5,7 +5,17 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Settings, LogOut, Package, ShoppingCart, Users, BarChart3 } from 'lucide-react'
+import { Settings, LogOut, Package, ShoppingCart, Users, BarChart3, Mail, Truck, FileText, Zap, Image } from 'lucide-react'
+import { ProductsModule } from '@/components/admin/modules/products-module'
+import { CategoriesModule } from '@/components/admin/modules/categories-module'
+import { OrdersModule } from '@/components/admin/modules/orders-module'
+import { BannersModule } from '@/components/admin/modules/banners-module'
+import { SettingsModule } from '@/components/admin/modules/settings-module'
+import { AnalyticsModule } from '@/components/admin/modules/analytics-module'
+import { NewsletterModule } from '@/components/admin/modules/newsletter-module'
+import { DeliveryModule } from '@/components/admin/modules/delivery-module'
+import { PoliciesModule } from '@/components/admin/modules/policies-module'
+import { OffersModule } from '@/components/admin/modules/offers-module'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -14,19 +24,29 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token')
-    if (!token) {
-      router.push('/admin/login')
-      return
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/admin/me')
+        if (!res.ok) {
+          router.push('/admin/login')
+          return
+        }
+        setAdmin(await res.json())
+      } catch (error) {
+        router.push('/admin/login')
+      } finally {
+        setLoading(false)
+      }
     }
-
-    // In a real app, verify token on backend
-    setLoading(false)
+    checkAuth()
   }, [router])
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    router.push('/admin/login')
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+    } finally {
+      router.push('/admin/login')
+    }
   }
 
   if (loading) {
@@ -51,246 +71,82 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-5">
-            <TabsTrigger value="overview" title="Overview">
+          <TabsList className="grid w-full max-w-4xl grid-cols-10 gap-1">
+            <TabsTrigger value="overview" title="Overview" className="text-xs">
               <BarChart3 className="w-4 h-4" />
             </TabsTrigger>
-            <TabsTrigger value="products" title="Products">
+            <TabsTrigger value="products" title="Products" className="text-xs">
               <Package className="w-4 h-4" />
             </TabsTrigger>
-            <TabsTrigger value="orders" title="Orders">
+            <TabsTrigger value="categories" title="Categories" className="text-xs">
+              <Package className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="banners" title="Banners" className="text-xs">
+              <Image className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="orders" title="Orders" className="text-xs">
               <ShoppingCart className="w-4 h-4" />
             </TabsTrigger>
-            <TabsTrigger value="customers" title="Customers">
-              <Users className="w-4 h-4" />
+            <TabsTrigger value="offers" title="Offers" className="text-xs">
+              <Zap className="w-4 h-4" />
             </TabsTrigger>
-            <TabsTrigger value="settings" title="Settings">
+            <TabsTrigger value="newsletter" title="Newsletter" className="text-xs">
+              <Mail className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="delivery" title="Delivery" className="text-xs">
+              <Truck className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="policies" title="Policies" className="text-xs">
+              <FileText className="w-4 h-4" />
+            </TabsTrigger>
+            <TabsTrigger value="settings" title="Settings" className="text-xs">
               <Settings className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Products</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Customers</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">0</div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">KSh 0</div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          <div className="mt-8">
+            <TabsContent value="overview" className="space-y-6">
+              <AnalyticsModule />
+            </TabsContent>
 
-          <TabsContent value="products">
-            <Card>
-              <CardHeader>
-                <CardTitle>Products Management</CardTitle>
-                <CardDescription>Coming soon - Manage products, categories, and inventory</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Product management module is being developed...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <TabsContent value="products">
+              <ProductsModule />
+            </TabsContent>
 
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Orders Management</CardTitle>
-                <CardDescription>Coming soon - View and manage customer orders</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Orders management module is being developed...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <TabsContent value="categories">
+              <CategoriesModule />
+            </TabsContent>
 
-          <TabsContent value="customers">
-            <Card>
-              <CardHeader>
-                <CardTitle>Customers Management</CardTitle>
-                <CardDescription>Coming soon - Manage customer accounts and data</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Customers management module is being developed...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <TabsContent value="banners">
+              <BannersModule />
+            </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4">
-            <SettingsModule />
-          </TabsContent>
+            <TabsContent value="orders">
+              <OrdersModule />
+            </TabsContent>
+
+            <TabsContent value="offers">
+              <OffersModule />
+            </TabsContent>
+
+            <TabsContent value="newsletter">
+              <NewsletterModule />
+            </TabsContent>
+
+            <TabsContent value="delivery">
+              <DeliveryModule />
+            </TabsContent>
+
+            <TabsContent value="policies">
+              <PoliciesModule />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <SettingsModule />
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>
-  )
-}
-
-function SettingsModule() {
-  const [settings, setSettings] = useState<any>({})
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch('/api/admin/settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data)
-      }
-    } catch (error) {
-      console.error('[v0] Error fetching settings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSettingChange = (key: string, value: string) => {
-    setSettings({
-      ...settings,
-      [key]: value,
-    })
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const response = await fetch('/api/admin/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      })
-
-      if (response.ok) {
-        alert('Settings saved successfully')
-      }
-    } catch (error) {
-      console.error('[v0] Error saving settings:', error)
-      alert('Error saving settings')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) return <div>Loading settings...</div>
-
-  return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>General Settings</CardTitle>
-          <CardDescription>Configure store information and preferences</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Store Name</label>
-            <input
-              type="text"
-              value={settings.store_name || 'Sonya Stores'}
-              onChange={(e) => handleSettingChange('store_name', e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Store Email</label>
-            <input
-              type="email"
-              value={settings.store_email || 'info@sonyastores.com'}
-              onChange={(e) => handleSettingChange('store_email', e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Store Phone</label>
-            <input
-              type="tel"
-              value={settings.store_phone || '0723274619'}
-              onChange={(e) => handleSettingChange('store_phone', e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Store Address</label>
-            <textarea
-              value={settings.store_address || 'Nature HSE opposite Agro HSE stall, Nairobi, Kenya'}
-              onChange={(e) => handleSettingChange('store_address', e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-sm h-24"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Store Description</label>
-            <textarea
-              value={settings.store_description || ''}
-              onChange={(e) => handleSettingChange('store_description', e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-sm h-24"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Tax Rate (%)</label>
-              <input
-                type="number"
-                value={settings.tax_rate || 16}
-                onChange={(e) => handleSettingChange('tax_rate', e.target.value)}
-                step="0.1"
-                className="w-full px-3 py-2 border border-border rounded-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Shipping Cost (KSh)</label>
-              <input
-                type="number"
-                value={settings.shipping_cost || 200}
-                onChange={(e) => handleSettingChange('shipping_cost', e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-sm"
-              />
-            </div>
-          </div>
-
-          <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? 'Saving...' : 'Save Settings'}
-          </Button>
-        </CardContent>
-      </Card>
-    </>
   )
 }
