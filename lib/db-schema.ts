@@ -1,6 +1,6 @@
 /**
- * DATABASE SCHEMA for Kallitos Fashion
- * Database name: kallitos_fashion
+ * DATABASE SCHEMA for Sonya Stores
+ * Database name: sonya_stores
  *
  * This file documents the full database schema needed to power
  * both the storefront and admin panel. All tables, columns,

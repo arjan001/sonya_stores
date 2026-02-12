@@ -3,7 +3,7 @@
 ## ✅ COMPLETED
 
 ### Frontend (Static/Disconnected)
-- [x] Transformed from Kallitos Fashion (jeans) to Sonya Stores (shoes & home decor)
+- [x] Transformed from Kallitos Fashion to Sonya Stores (shoes & home decor)
 - [x] Generated 6 category images (Women's Shoes, Men's Shoes, Sneakers, Handbags, Home Accessories, Sandals)
 - [x] Generated 8 product dummy images for e-commerce
 - [x] Generated 3 hero banner images (Shoes, Handbags, Home Decor)

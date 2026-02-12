@@ -253,7 +253,7 @@ export function AdminProducts() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "kallitos-product-import-template.csv"
+    a.download = "sonya-stores-product-import-template.csv"
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -400,7 +400,7 @@ export function AdminProducts() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "kallitos-products.csv"
+    a.download = "sonya-stores-products.csv"
     a.click()
     URL.revokeObjectURL(url)
   }

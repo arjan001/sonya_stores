@@ -1,5 +1,5 @@
 -- =====================================================
--- Kallitos Fashion - Full Database Schema
+-- Sonya Stores - Full Database Schema
 -- =====================================================
 
 -- 1. categories
@@ -153,8 +153,8 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Store
-  store_name VARCHAR(255) DEFAULT 'Kallitos Fashion',
-  store_email VARCHAR(255) DEFAULT 'info@kallitosfashion.com',
+store_name VARCHAR(255) DEFAULT 'Sonya Stores',
+store_email VARCHAR(255) DEFAULT 'support@sonyastores.com',
   store_phone VARCHAR(50) DEFAULT '+254 700 000000',
   whatsapp_number VARCHAR(20) DEFAULT '+254700000000',
   currency_symbol VARCHAR(10) DEFAULT 'KSh',
@@ -165,8 +165,8 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   maintenance_mode BOOLEAN DEFAULT false,
 
   -- SEO
-  site_title VARCHAR(255) DEFAULT 'Kallitos Fashion - Thrift & New Jeans',
-  site_description TEXT DEFAULT 'Discover curated thrifted and brand-new denim at Kallitos Fashion.',
+site_title VARCHAR(255) DEFAULT 'Sonya Stores - Quality Shoes & Home Decor',
+site_description TEXT DEFAULT 'Shop premium footwear and elegant home decor at Sonya Stores. Unbeatable prices at Nature House, Nairobi.',
   meta_keywords TEXT DEFAULT 'jeans, denim, thrift, fashion, Kenya',
   canonical_url VARCHAR(500) DEFAULT '',
   og_image_url TEXT,
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   accent_color VARCHAR(20) DEFAULT '#fafafa',
   font_heading VARCHAR(100) DEFAULT 'Playfair Display',
   font_body VARCHAR(100) DEFAULT 'Inter',
-  logo_text VARCHAR(255) DEFAULT 'Kallitos Fashion',
+  logo_text VARCHAR(255) DEFAULT 'Sonya Stores',
   logo_image_url TEXT,
   favicon_url TEXT,
   show_recent_purchase BOOLEAN DEFAULT true,
@@ -190,14 +190,14 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
   footer_description TEXT DEFAULT 'Curated thrift and brand-new denim. Style made affordable.',
   footer_address TEXT DEFAULT 'Nairobi, Kenya',
   footer_phone VARCHAR(50) DEFAULT '+254 700 000000',
-  footer_email VARCHAR(255) DEFAULT 'info@kallitosfashion.com',
+  footer_email VARCHAR(255) DEFAULT 'support@sonyastores.com',
   footer_whatsapp VARCHAR(20) DEFAULT '+254700000000',
   footer_instagram VARCHAR(500) DEFAULT 'https://www.instagram.com/kallittofashions/',
   footer_tiktok VARCHAR(500) DEFAULT 'https://www.tiktok.com/@kallittos',
   footer_twitter VARCHAR(500),
   footer_open_hours VARCHAR(255) DEFAULT 'Mon - Sat: 9AM - 6PM',
   footer_dispatch_days VARCHAR(255) DEFAULT 'Orders dispatched within 24hrs',
-  copyright_text VARCHAR(255) DEFAULT '2026 Kallitos Fashion. All rights reserved.',
+  copyright_text VARCHAR(255) DEFAULT '2026 Sonya Stores. All rights reserved.',
   show_privacy_policy BOOLEAN DEFAULT true,
   show_terms BOOLEAN DEFAULT true,
   show_refund_policy BOOLEAN DEFAULT true,
