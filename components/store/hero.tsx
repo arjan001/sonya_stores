@@ -4,10 +4,16 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useCallback } from "react"
 import { ArrowRight } from "lucide-react"
-import type { HeroBanner } from "@/lib/types"
-import useSWR from "swr"
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+interface HeroBanner {
+  id: string
+  title: string
+  subtitle: string
+  collection: string
+  bannerImage: string
+  linkUrl: string
+  buttonText: string
+  sortOrder: number
+}
 
 const SHOES_CAROUSEL_IMAGES = [
   "/banners/shoes-banner-1.jpg",
@@ -99,11 +105,8 @@ function ShoesCarousel({ banner }: { banner: HeroBanner }) {
 }
 
 export function Hero() {
-  const { data: banners } = useSWR<HeroBanner[]>("/api/hero-banners", fetcher)
-  const items = banners && banners.length >= 3 ? banners : FALLBACK_BANNERS
-
-  const mainBanner = items[0]
-  const sideBanners = items.slice(1, 3)
+  const mainBanner = FALLBACK_BANNERS[0]
+  const sideBanners = FALLBACK_BANNERS.slice(1, 3)
 
   return (
     <section className="bg-secondary">

@@ -2,8 +2,15 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Get the Supabase session response
-  const response = await updateSession(request)
+  let response: NextResponse
+
+  // Only use Supabase middleware if env vars are configured
+  const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (hasSupabase) {
+    response = await updateSession(request)
+  } else {
+    response = NextResponse.next({ request })
+  }
 
   // Add security headers to all responses
   response.headers.set('X-Frame-Options', 'DENY')

@@ -1,9 +1,5 @@
 "use client"
 
-import useSWR from "swr"
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
 export function TopBar() {
   const offers: string[] = ["Quality Shoes & Home Decor at Unbeatable Prices | Call 0723274619 | Nature HSE opposite Agro HSE stall"]
   const doubled = [...offers, ...offers]
