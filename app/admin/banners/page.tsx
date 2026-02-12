@@ -1,5 +1,10 @@
-import { AdminBanners } from "@/components/admin/banners"
+import { AdminShell } from "@/components/admin/admin-shell"
+import { BannersModule } from "@/components/admin/modules/banners-module"
 
-export default function Page() {
-  return <AdminBanners />
+export default function BannersPage() {
+  return (
+    <AdminShell title="Banners">
+      <BannersModule />
+    </AdminShell>
+  )
 }

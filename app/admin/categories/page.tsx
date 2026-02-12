@@ -1,5 +1,10 @@
-import { AdminCategories } from "@/components/admin/categories"
+import { AdminShell } from "@/components/admin/admin-shell"
+import { CategoriesModule } from "@/components/admin/modules/categories-module"
 
-export default function Page() {
-  return <AdminCategories />
+export default function CategoriesPage() {
+  return (
+    <AdminShell title="Categories">
+      <CategoriesModule />
+    </AdminShell>
+  )
 }

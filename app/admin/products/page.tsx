@@ -1,5 +1,10 @@
-import { AdminProducts } from "@/components/admin/products"
+import { AdminShell } from "@/components/admin/admin-shell"
+import { ProductsModule } from "@/components/admin/modules/products-module"
 
-export default function Page() {
-  return <AdminProducts />
+export default function ProductsPage() {
+  return (
+    <AdminShell title="Products">
+      <ProductsModule />
+    </AdminShell>
+  )
 }

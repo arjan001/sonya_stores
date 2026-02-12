@@ -4,55 +4,59 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useCallback } from "react"
 import { ArrowRight } from "lucide-react"
-import type { HeroBanner } from "@/lib/types"
-import useSWR from "swr"
+interface HeroBanner {
+  id: string
+  title: string
+  subtitle: string
+  collection: string
+  bannerImage: string
+  linkUrl: string
+  buttonText: string
+  sortOrder: number
+}
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-const BABYSHOP_CAROUSEL_IMAGES = [
-  "/banners/babyshop-collection.jpg",
-  "/banners/babyshop-carousel-2.jpg",
-  "/banners/babyshop-carousel-3.jpg",
+const SHOES_CAROUSEL_IMAGES = [
+  "/banners/shoes-banner-1.jpg",
 ]
 
 const FALLBACK_BANNERS: HeroBanner[] = [
   {
-    id: "babyshop",
-    title: "Kali-ttos Little Wardrobe",
-    subtitle: "Everything your little one needs -- from rompers & onesies to tiny shoes & accessories. Ages 0-1, 1-3 & 4-6.",
-    collection: "babyshop",
-    bannerImage: "/banners/babyshop-collection.jpg",
-    linkUrl: "/shop/babyshop",
-    buttonText: "Shop Babyshop",
+    id: "shoes",
+    title: "Quality Shoes for Every Occasion",
+    subtitle: "Discover our trusted collection of elegant heels, comfortable sneakers, and stylish sandals at unbeatable prices.",
+    collection: "shoes",
+    bannerImage: "/banners/shoes-banner-1.jpg",
+    linkUrl: "/shop/shoes",
+    buttonText: "Shop Shoes",
     sortOrder: 0,
   },
   {
-    id: "men",
-    title: "Men's Collection",
-    subtitle: "Rugged denim for the modern man. Slim fits to relaxed cuts.",
-    collection: "men",
-    bannerImage: "/banners/men-collection.jpg",
-    linkUrl: "/shop/men",
-    buttonText: "Shop Men",
+    id: "handbags",
+    title: "Stylish Handbags",
+    subtitle: "Premium handbags and purses to complement your style.",
+    collection: "handbags",
+    bannerImage: "/banners/handbags-banner.jpg",
+    linkUrl: "/shop/handbags",
+    buttonText: "Shop Handbags",
     sortOrder: 1,
   },
   {
-    id: "women",
-    title: "Women's Collection",
-    subtitle: "Curated denim for every woman. Thrift finds & brand-new pieces.",
-    collection: "women",
-    bannerImage: "/banners/women-collection.jpg",
-    linkUrl: "/shop/women",
-    buttonText: "Shop Women",
+    id: "home-decor",
+    title: "Home Decor",
+    subtitle: "Beautiful accessories to transform your living space.",
+    collection: "home-decor",
+    bannerImage: "/banners/home-decor-banner.jpg",
+    linkUrl: "/shop/home-decor",
+    buttonText: "Shop Home Decor",
     sortOrder: 2,
   },
 ]
 
-function BabyshopCarousel({ banner }: { banner: HeroBanner }) {
+function ShoesCarousel({ banner }: { banner: HeroBanner }) {
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % BABYSHOP_CAROUSEL_IMAGES.length)
+    setCurrentSlide((prev) => (prev + 1) % SHOES_CAROUSEL_IMAGES.length)
   }, [])
 
   useEffect(() => {
@@ -66,7 +70,7 @@ function BabyshopCarousel({ banner }: { banner: HeroBanner }) {
       className="lg:col-span-8 relative overflow-hidden rounded-sm min-h-[400px] lg:min-h-[520px] flex items-end group"
     >
       <div className="absolute inset-0 z-0">
-        {BABYSHOP_CAROUSEL_IMAGES.map((src, i) => (
+        {SHOES_CAROUSEL_IMAGES.map((src, i) => (
           <div
             key={src}
             className="absolute inset-0 transition-opacity duration-700"
@@ -84,7 +88,7 @@ function BabyshopCarousel({ banner }: { banner: HeroBanner }) {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
       </div>
       <div className="relative z-10 p-8 lg:p-12 w-full">
-        <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">Baby Essentials</p>
+        <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">Quality Footwear</p>
         <h1 className="text-background text-4xl lg:text-5xl font-serif font-bold leading-tight text-balance">
           {banner.title}
         </h1>
@@ -101,19 +105,16 @@ function BabyshopCarousel({ banner }: { banner: HeroBanner }) {
 }
 
 export function Hero() {
-  const { data: banners } = useSWR<HeroBanner[]>("/api/hero-banners", fetcher)
-  const items = banners && banners.length >= 3 ? banners : FALLBACK_BANNERS
-
-  const mainBanner = items[0]
-  const sideBanners = items.slice(1, 3)
+  const mainBanner = FALLBACK_BANNERS[0]
+  const sideBanners = FALLBACK_BANNERS.slice(1, 3)
 
   return (
     <section className="bg-secondary">
       <div className="mx-auto max-w-7xl px-4 py-6 lg:py-0">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
-          {/* Main Banner - Babyshop with Carousel */}
-          {mainBanner.collection === "babyshop" ? (
-            <BabyshopCarousel banner={mainBanner} />
+          {/* Main Banner - Shoes with Carousel */}
+          {mainBanner.collection === "shoes" ? (
+            <ShoesCarousel banner={mainBanner} />
           ) : (
             <Link
               href={mainBanner.linkUrl}
@@ -131,7 +132,7 @@ export function Hero() {
               </div>
               <div className="relative z-10 p-8 lg:p-12 w-full">
                 <p className="text-background/80 text-xs tracking-[0.3em] uppercase mb-2">
-                  {mainBanner.collection === "babyshop" ? "Baby Essentials" : "Curated Denim"}
+                  {mainBanner.collection === "shoes" ? "Quality Footwear" : "Premium Products"}
                 </p>
                 <h1 className="text-background text-4xl lg:text-5xl font-serif font-bold leading-tight text-balance">
                   {mainBanner.title}
@@ -147,7 +148,7 @@ export function Hero() {
             </Link>
           )}
 
-          {/* Side Banners - Men & Women */}
+          {/* Side Banners - Handbags & Home Decor */}
           <div className="lg:col-span-4 flex flex-col gap-4 lg:gap-6">
             {sideBanners.map((banner) => (
               <Link

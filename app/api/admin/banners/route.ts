@@ -1,146 +1,86 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, rateLimit, rateLimitResponse } from "@/lib/security"
+import { jwtVerify } from "jose"
+import { getBanners, getBanner, createBanner, updateBanner, deleteBanner } from "@/lib/admin-db"
 
-export async function GET(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 30, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
 
-  const [bannersRes, navOffersRes, popupRes] = await Promise.all([
-    supabase.from("banners").select("*").order("sort_order", { ascending: true }),
-    supabase.from("navbar_offers").select("*").order("sort_order", { ascending: true }),
-    supabase.from("popup_offers").select("*").order("created_at", { ascending: false }),
-  ])
-
-  return NextResponse.json({
-    banners: bannersRes.data || [],
-    navbarOffers: navOffersRes.data || [],
-    popupOffers: popupRes.data || [],
-  })
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    const verified = await jwtVerify(token, secret)
+    return verified.payload.sub as string
+  } catch {
+    return null
+  }
 }
 
-// Banners CRUD
+export async function GET(request: NextRequest) {
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (id) {
+      const banner = await getBanner(id)
+      return NextResponse.json(banner)
+    }
+
+    const banners = await getBanners()
+    return NextResponse.json(banners)
+  } catch (error) {
+    console.error("[v0] Error fetching banners:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const body = await request.json()
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  if (body.type === "banner") {
-    const { data, error } = await supabase
-      .from("banners")
-      .insert({
-        title: body.title,
-        subtitle: body.subtitle || null,
-        image_url: body.image || null,
-        link_url: body.link || "/shop",
-        position: body.position || "hero",
-        is_active: true,
-        sort_order: body.sortOrder || 0,
-      })
-      .select()
-      .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json(data)
+    const data = await request.json()
+    const id = await createBanner(data)
+
+    return NextResponse.json({ id, message: "Banner created" })
+  } catch (error) {
+    console.error("[v0] Error creating banner:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  if (body.type === "navbar_offer") {
-    const { data, error } = await supabase
-      .from("navbar_offers")
-      .insert({
-        text: body.text,
-        is_active: true,
-        sort_order: body.sortOrder || 0,
-      })
-      .select()
-      .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json(data)
-  }
-
-  if (body.type === "popup_offer") {
-    const { data, error } = await supabase
-      .from("popup_offers")
-      .insert({
-        title: body.title,
-        description: body.description || null,
-        discount_percentage: body.discountPercentage || null,
-        image_url: body.image || null,
-        is_active: true,
-      })
-      .select()
-      .single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json(data)
-  }
-
-  return NextResponse.json({ error: "Invalid type" }, { status: 400 })
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const body = await request.json()
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  if (body.type === "banner") {
-    const { error } = await supabase
-      .from("banners")
-      .update({
-        title: body.title,
-        subtitle: body.subtitle || null,
-        image_url: body.image || null,
-        link_url: body.link || "/shop",
-        position: body.position || "hero",
-        is_active: body.isActive ?? true,
-      })
-      .eq("id", body.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ success: true })
+    const { id, ...data } = await request.json()
+    await updateBanner(id, data)
+
+    return NextResponse.json({ message: "Banner updated" })
+  } catch (error) {
+    console.error("[v0] Error updating banner:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  if (body.type === "navbar_offer") {
-    const { error } = await supabase
-      .from("navbar_offers")
-      .update({ text: body.text, is_active: body.isActive ?? true })
-      .eq("id", body.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ success: true })
-  }
-
-  if (body.type === "popup_offer") {
-    const { error } = await supabase
-      .from("popup_offers")
-      .update({
-        title: body.title,
-        description: body.description || null,
-        discount_percentage: body.discountPercentage || null,
-        image_url: body.image || null,
-        is_active: body.isActive ?? true,
-      })
-      .eq("id", body.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    return NextResponse.json({ success: true })
-  }
-
-  return NextResponse.json({ error: "Invalid type" }, { status: 400 })
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-  const id = searchParams.get("id")
-  const type = searchParams.get("type")
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  if (!id || !type) return NextResponse.json({ error: "Missing id or type" }, { status: 400 })
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
 
-  const table = type === "banner" ? "banners" : type === "navbar_offer" ? "navbar_offers" : "popup_offers"
-  const { error } = await supabase.from(table).delete().eq("id", id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 })
+
+    await deleteBanner(id)
+    return NextResponse.json({ message: "Banner deleted" })
+  } catch (error) {
+    console.error("[v0] Error deleting banner:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
 }
+

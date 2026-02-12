@@ -1,12 +1,9 @@
 import type { MetadataRoute } from "next"
-import { createAdminClient } from "@/lib/supabase/admin"
 
-const SITE_URL = "https://kallittofashions.com"
+const SITE_URL = "https://sonyastores.com"
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createAdminClient()
-
-  // Static pages
+export default function sitemap(): MetadataRoute.Sitemap {
+  // Static pages only - no database calls during build
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
@@ -21,19 +18,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/shop/men`,
+      url: `${SITE_URL}/shop?category=womens-shoes`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/shop/women`,
+      url: `${SITE_URL}/shop?category=mens-shoes`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/shop/babyshop`,
+      url: `${SITE_URL}/shop?category=sneakers`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/shop?category=handbags`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/shop?category=home-accessories`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/shop?category=sandals`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
@@ -48,12 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${SITE_URL}/shop?filter=offers`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/delivery`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
       priority: 0.8,
     },
     {
@@ -88,30 +97,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // Dynamic product pages
-  const { data: products } = await supabase
-    .from("products")
-    .select("slug, updated_at, created_at")
-
-  const productPages: MetadataRoute.Sitemap = (products || []).map((p) => ({
-    url: `${SITE_URL}/product/${p.slug}`,
-    lastModified: new Date(p.updated_at || p.created_at),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }))
-
-  // Category pages (via shop?category=)
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("slug")
-    .eq("is_active", true)
-
-  const categoryPages: MetadataRoute.Sitemap = (categories || []).map((c) => ({
-    url: `${SITE_URL}/shop?category=${c.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }))
-
-  return [...staticPages, ...productPages, ...categoryPages]
+  return staticPages
 }

@@ -3,7 +3,6 @@
 import { useState, useEffect, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import {
   LayoutDashboard,
   Package,
@@ -29,17 +28,14 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Categories", href: "/admin/categories", icon: Tag },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart, hasBadge: true },
-  { label: "Offers & Banners", href: "/admin/banners", icon: ImageIcon },
-  { label: "Newsletter", href: "/admin/newsletter", icon: Megaphone },
-  { label: "Delivery", href: "/admin/delivery-locations", icon: Truck },
+  { label: "Banners", href: "/admin/banners", icon: ImageIcon },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Policies", href: "/admin/policies", icon: FileText },
-  { label: "Users & Roles", href: "/admin/users", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Users", href: "/admin/users", icon: Users },
 ]
 
 interface CurrentUser {
-  display_name: string
+  name: string
   email: string
   role: string
 }
@@ -53,49 +49,48 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
   const [pendingOrders, setPendingOrders] = useState(0)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (user) {
-        const { data } = await supabase
-          .from("admin_users")
-          .select("display_name, email, role")
-          .eq("email", user.email)
-          .single()
-        if (data) setCurrentUser(data)
-        else setCurrentUser({ display_name: user.email || "Admin", email: user.email || "", role: "admin" })
+    const fetchUserAndOrders = async () => {
+      try {
+        // Fetch current user
+        const userRes = await fetch('/api/admin/me')
+        if (userRes.ok) {
+          const user = await userRes.json()
+          setCurrentUser(user)
+        }
+
+        // Fetch pending orders count
+        const ordersRes = await fetch('/api/admin/orders?status=pending')
+        if (ordersRes.ok) {
+          const orders = await ordersRes.json()
+          setPendingOrders(orders.count || 0)
+        }
+      } catch (error) {
+        console.error('[v0] Error fetching user/orders:', error)
       }
-    })
-
-    // Fetch pending orders count
-    const fetchPending = async () => {
-      const { count } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending")
-      setPendingOrders(count || 0)
     }
-    fetchPending()
 
-    // Poll every 30 seconds for new orders
-    const interval = setInterval(fetchPending, 30000)
+    fetchUserAndOrders()
+    const interval = setInterval(fetchUserAndOrders, 30000)
     return () => clearInterval(interval)
   }, [])
 
   const handleLogout = async () => {
     setLoggingOut(true)
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/auth/login")
-    router.refresh()
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+      router.push("/admin/login")
+      router.refresh()
+    } catch (error) {
+      console.error('[v0] Logout error:', error)
+      setLoggingOut(false)
+    }
   }
 
   const roleBadge = currentUser?.role === "super_admin"
     ? "Super Admin"
     : currentUser?.role === "editor"
       ? "Editor"
-      : currentUser?.role === "viewer"
-        ? "Viewer"
-        : "Admin"
+      : "Admin"
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -105,8 +100,8 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
           <Menu className="h-5 w-5" />
           <span className="sr-only">Open menu</span>
         </button>
-        <Link href="/admin" className="font-serif text-lg font-bold">
-          KF Admin
+        <Link href="/admin/dashboard" className="font-serif text-lg font-bold">
+          Sonya Admin
         </Link>
         <Link href="/" className="text-xs text-muted-foreground hover:text-foreground">
           View Store
@@ -115,12 +110,12 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
 
       <div className="flex">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:flex flex-col w-60 min-h-screen border-r border-border bg-background fixed">
+        <aside className="hidden lg:flex flex-col w-64 min-h-screen border-r border-border bg-background fixed">
           <div className="p-6 border-b border-border">
-            <Link href="/admin" className="font-serif text-xl font-bold">
-              KF Admin
+            <Link href="/admin/dashboard" className="font-serif text-xl font-bold">
+              Sonya Admin
             </Link>
-            <p className="text-xs text-muted-foreground mt-1">Kallitos Fashion Admin</p>
+            <p className="text-xs text-muted-foreground mt-1">Admin Dashboard</p>
           </div>
           <nav className="flex-1 py-4">
             {navItems.map((item) => {
@@ -147,7 +142,7 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
               )
             })}
           </nav>
-          {/* Current user + logout */}
+          {/* Current user */}
           <div className="p-4 border-t border-border space-y-3">
             {currentUser && (
               <div className="flex items-center gap-3">
@@ -155,29 +150,20 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
                   <UserCircle className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium truncate">{currentUser.display_name}</p>
+                  <p className="text-xs font-medium truncate">{currentUser.name}</p>
                   <p className="text-[10px] text-muted-foreground truncate">{roleBadge}</p>
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={loggingOut}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-                {loggingOut ? "Signing out..." : "Sign Out"}
-              </button>
-              <span className="text-border">|</span>
-              <Link
-                href="/"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                View Store
-              </Link>
-            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              {loggingOut ? "Signing out..." : "Sign Out"}
+            </button>
           </div>
         </aside>
 
@@ -194,8 +180,8 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
             />
             <aside className="fixed inset-y-0 left-0 w-72 bg-background z-50 lg:hidden flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <Link href="/admin" className="font-serif text-lg font-bold">
-                  KF Admin
+                <Link href="/admin/dashboard" className="font-serif text-lg font-bold">
+                  Sonya Admin
                 </Link>
                 <button type="button" onClick={() => setSidebarOpen(false)}>
                   <X className="h-5 w-5" />
@@ -207,7 +193,7 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
                     <UserCircle className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{currentUser.display_name}</p>
+                    <p className="text-sm font-medium truncate">{currentUser.name}</p>
                     <p className="text-xs text-muted-foreground">{roleBadge}</p>
                   </div>
                 </div>
@@ -238,12 +224,12 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
                   )
                 })}
               </nav>
-              <div className="p-4 border-t border-border flex items-center gap-4">
+              <div className="p-4 border-t border-border">
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                  className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="h-4 w-4" />
                   {loggingOut ? "Signing out..." : "Sign Out"}
@@ -254,10 +240,10 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
         )}
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-60">
+        <main className="flex-1 lg:ml-64">
           <div className="hidden lg:flex items-center justify-between h-14 px-8 border-b border-border bg-background sticky top-0 z-30">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Link href="/admin" className="hover:text-foreground">Admin</Link>
+              <Link href="/admin/dashboard" className="hover:text-foreground">Admin</Link>
               <ChevronRight className="h-3 w-3" />
               <span className="text-foreground font-medium">{title}</span>
             </div>
