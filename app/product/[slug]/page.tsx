@@ -4,44 +4,44 @@ import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
 
-const SITE_URL = "https://kallittofashions.com"
+const SITE_URL = "https://sonyastores.com"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   try {
     const product = await getProductBySlug(slug)
-    if (!product) return { title: "Product Not Found | Kallittos Fashions" }
+    if (!product) return { title: "Product Not Found | Sonya Stores" }
     const desc = product.description.slice(0, 155) + (product.description.length > 155 ? "..." : "")
     return {
-      title: `${product.name} | Kallittos Fashions`,
-      description: `${desc} | Shop curated thrift & new denim at Kallittos Fashions.`,
+      title: `${product.name} | Sonya Stores`,
+      description: `${desc} | Shop premium shoes and home decor at Sonya Stores.`,
       keywords: [
-        product.name, "Kallittos Fashions", "thrift denim Kenya",
-        "curated denim", "sustainable fashion", "buy jeans online Kenya",
-        product.category || "", "thrift jeans Nairobi",
+        product.name, "Sonya Stores", "quality shoes Kenya",
+        "home decor Kenya", "affordable luxury", "premium footwear",
+        product.category || "", "shop in Nairobi",
       ],
       alternates: {
         canonical: `${SITE_URL}/product/${slug}`,
       },
       openGraph: {
-        title: `${product.name} | Kallittos Fashions`,
-        description: `${desc} Style meets sustainability.`,
+        title: `${product.name} | Sonya Stores`,
+        description: `${desc} Unbeatable prices on quality shoes and home decor.`,
         url: `${SITE_URL}/product/${slug}`,
-        images: product.images[0] ? [{ url: product.images[0], width: 600, height: 800, alt: `${product.name} - Kallittos Fashions` }] : [],
+        images: product.images[0] ? [{ url: product.images[0], width: 600, height: 800, alt: `${product.name} - Sonya Stores` }] : [],
         type: "website",
-        siteName: "Kallittos Fashions",
+        siteName: "Sonya Stores",
         locale: "en_KE",
       },
       twitter: {
         card: "summary_large_image",
-        title: `${product.name} | Kallittos Fashions`,
+        title: `${product.name} | Sonya Stores`,
         description: desc,
         images: product.images[0] ? [product.images[0]] : [],
-        creator: "@kallittos",
+        creator: "@sonyas.store",
       },
     }
   } catch {
-    return { title: "Product Not Found | Kallittos Fashions" }
+    return { title: "Product Not Found | Sonya Stores" }
   }
 }
 
