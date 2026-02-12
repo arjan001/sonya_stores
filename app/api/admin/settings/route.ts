@@ -1,60 +1,60 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, rateLimit, rateLimitResponse } from "@/lib/security"
+import { query } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 30, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("site_settings")
-    .select("*")
-    .limit(1)
-    .single()
+  try {
+    const result = await query(
+      'SELECT key, value FROM settings ORDER BY category, key'
+    )
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+    const settings: Record<string, any> = {}
+    result.rows.forEach((row: any) => {
+      settings[row.key] = typeof row.value === 'string' ? JSON.parse(row.value) : row.value
+    })
+
+    return NextResponse.json(settings)
+  } catch (error) {
+    console.error('[v0] Error fetching settings:', error)
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
+    )
+  }
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
-  const body = await request.json()
+  try {
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
+                  request.headers.get('X-Admin-Token')
 
-  const { data: current } = await supabase.from("site_settings").select("id").limit(1).single()
-  if (!current) return NextResponse.json({ error: "No settings row found" }, { status: 404 })
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
-  const { error } = await supabase
-    .from("site_settings")
-    .update({
-      store_name: body.storeName,
-      store_tagline: body.storeTagline,
-      store_email: body.storeEmail,
-      store_phone: body.storePhone,
-      store_address: body.storeAddress,
-      currency: body.currency,
-      whatsapp_number: body.whatsappNumber,
-      meta_title: body.metaTitle,
-      meta_description: body.metaDescription,
-      meta_keywords: body.metaKeywords,
-      primary_color: body.primaryColor,
-      secondary_color: body.secondaryColor,
-      logo_url: body.logoUrl,
-      favicon_url: body.faviconUrl,
-      footer_about: body.footerText,
-      footer_copyright: body.footerCopyright,
-      instagram_url: body.socialInstagram,
-      tiktok_url: body.socialTiktok,
-      twitter_url: body.socialTwitter,
-      facebook_url: body.socialFacebook,
-      show_newsletter_popup: body.enableNewsletter,
-      maintenance_mode: body.maintenanceMode,
-    })
-    .eq("id", current.id)
+    const settingsData = await request.json()
+    const updates: Promise<any>[] = []
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+    for (const [key, value] of Object.entries(settingsData)) {
+      updates.push(
+        query(
+          `UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE key = $2`,
+          [JSON.stringify(value), key]
+        )
+      )
+    }
+
+    await Promise.all(updates)
+
+    return NextResponse.json({ message: 'Settings updated successfully' })
+  } catch (error) {
+    console.error('[v0] Error updating settings:', error)
+    return NextResponse.json(
+      { message: 'Internal server error' },
+      { status: 500 }
+    )
+  }
 }
