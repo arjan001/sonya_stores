@@ -55,17 +55,28 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
     const fetchUserAndOrders = async () => {
       try {
         // Fetch current user
-        const userRes = await fetch('/api/admin/me')
+        const userRes = await fetch('/api/admin/me', {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        
         if (userRes.ok) {
           const user = await userRes.json()
           setCurrentUser(user)
+        } else if (userRes.status === 401) {
+          // Unauthorized - redirect to login
+          router.push('/admin/login')
         }
 
         // Fetch pending orders count
-        const ordersRes = await fetch('/api/admin/orders?status=pending')
+        const ordersRes = await fetch('/api/admin/orders?status=pending', {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        
         if (ordersRes.ok) {
           const orders = await ordersRes.json()
-          setPendingOrders(orders.count || 0)
+          setPendingOrders(Array.isArray(orders) ? orders.length : orders.count || 0)
         }
       } catch (error) {
         console.error('[v0] Error fetching user/orders:', error)
@@ -75,7 +86,7 @@ export function AdminShell({ children, title }: { children: ReactNode; title: st
     fetchUserAndOrders()
     const interval = setInterval(fetchUserAndOrders, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [router])
 
   const handleLogout = async () => {
     setLoggingOut(true)

@@ -22,12 +22,24 @@ export function AnalyticsModule() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/analytics")
-      if (!res.ok) throw new Error("Failed to fetch analytics")
+      const res = await fetch("/api/admin/analytics", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) {
+        console.error(`[v0] Analytics API error: ${res.status}`)
+        throw new Error(`Failed to fetch analytics: ${res.status}`)
+      }
       const data = await res.json()
       setAnalytics(data)
     } catch (error) {
       console.error("[v0] Error fetching analytics:", error)
+      setAnalytics({
+        totalOrders: 0,
+        pendingOrders: 0,
+        totalRevenue: 0,
+        topCategories: [],
+      })
     } finally {
       setLoading(false)
     }
