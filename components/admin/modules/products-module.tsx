@@ -71,11 +71,42 @@ export function ProductsModule() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories")
+      const res = await fetch("/api/admin/categories", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const data = await res.json()
         setCategories(data)
       }
+    } catch (error) {
+      console.error("[v0] Error fetching categories:", error)
+    }
+  }
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        limit: String(pageSize),
+        offset: String(page * pageSize),
+        ...(searchTerm && { search: searchTerm }),
+        ...(selectedCategory && { category: selectedCategory }),
+      })
+      const res = await fetch(`/api/admin/products?${params}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!res.ok) throw new Error("Failed to fetch products")
+      const { products: data, total: count } = await res.json()
+      setProducts(data || [])
+      setTotal(count || 0)
+    } catch (error) {
+      console.error("[v0] Error fetching products:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
     } catch (error) {
       console.error("[v0] Error fetching categories:", error)
     }
@@ -115,6 +146,7 @@ export function ProductsModule() {
 
       const res = await fetch("/api/admin/products", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -166,7 +198,11 @@ export function ProductsModule() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/products?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/products?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed to delete")
       setDeleteConfirm(null)
       fetchProducts()

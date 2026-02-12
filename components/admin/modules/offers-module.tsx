@@ -58,7 +58,10 @@ export function OffersModule() {
 
   const fetchOffers = async () => {
     try {
-      const res = await fetch("/api/admin/offers")
+      const res = await fetch("/api/admin/offers", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       setOffers(data)
@@ -71,7 +74,10 @@ export function OffersModule() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/admin/products?limit=1000")
+      const res = await fetch("/api/admin/products?limit=1000", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const { products: data } = await res.json()
         setProducts(data)
@@ -83,13 +89,18 @@ export function OffersModule() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/admin/categories")
+      const res = await fetch("/api/admin/categories", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const data = await res.json()
         setCategories(data)
       }
     } catch (error) {
       console.error("[v0] Error:", error)
+    }
+  }
     }
   }
 
@@ -101,6 +112,7 @@ export function OffersModule() {
 
       const res = await fetch("/api/admin/offers", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -118,7 +130,11 @@ export function OffersModule() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this offer?")) return
     try {
-      const res = await fetch(`/api/admin/offers?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/offers?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed")
       fetchOffers()
     } catch (error) {

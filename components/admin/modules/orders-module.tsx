@@ -98,7 +98,10 @@ export function OrdersModule() {
 
   const handleViewDetails = async (order: Order) => {
     try {
-      const res = await fetch(`/api/admin/orders?id=${order.id}`)
+      const res = await fetch(`/api/admin/orders?id=${order.id}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const fullOrder = await res.json()
         setSelectedOrder(fullOrder)

@@ -42,7 +42,12 @@ export function CategoriesModule() {
   const fetchCategories = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/categories")
+      const res = await fetch("/api/admin/categories", {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: categoryId }),
+      })
       if (!res.ok) throw new Error("Failed to fetch categories")
       const data = await res.json()
       setCategories(data)
@@ -66,6 +71,7 @@ export function CategoriesModule() {
 
       const res = await fetch("/api/admin/categories", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })

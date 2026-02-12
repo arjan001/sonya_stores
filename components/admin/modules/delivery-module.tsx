@@ -37,7 +37,10 @@ export function DeliveryModule() {
   const fetchDeliveries = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/delivery")
+      const res = await fetch("/api/admin/delivery", {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
       setDeliveries(data)
@@ -56,6 +59,7 @@ export function DeliveryModule() {
 
       const res = await fetch("/api/admin/delivery", {
         method,
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -85,7 +89,11 @@ export function DeliveryModule() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this delivery option?")) return
     try {
-      const res = await fetch(`/api/admin/delivery?id=${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/delivery?id=${id}`, {
+        method: "DELETE",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+      })
       if (!res.ok) throw new Error("Failed")
       fetchDeliveries()
     } catch (error) {

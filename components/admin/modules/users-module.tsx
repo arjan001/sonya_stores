@@ -21,7 +21,10 @@ export function UsersModule() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/admin/users')
+      const res = await fetch('/api/admin/users', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       const data = await res.json()
       setUsers(Array.isArray(data) ? data : [])
     } catch (error) {
