@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 const TILL_NUMBER = "8 4 9 2 7 3 5"
 const TILL_DIGITS = TILL_NUMBER.split(" ")
-const BUSINESS_NAME = "KALLITTOS FASHION"
+const BUSINESS_NAME = "SONYA STORES"
 
 interface MpesaPaymentModalProps {
   isOpen: boolean
@@ -152,7 +152,7 @@ export function MpesaPaymentModal({ isOpen, onClose, total, onPaymentConfirmed }
               <Textarea
                 value={mpesaMessage}
                 onChange={(e) => setMpesaMessage(e.target.value)}
-                placeholder={"Paste the full M-PESA SMS here e.g.\nSHK3A7B2C1 Confirmed. Ksh1,500.00 sent to KALLITTOS FASHION..."}
+                placeholder={"Paste the full M-PESA SMS here e.g.\nSHK3A7B2C1 Confirmed. Ksh1,500.00 sent to SONYA STORES..."}
                 rows={4}
                 className="text-sm"
               />
