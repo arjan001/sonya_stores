@@ -20,7 +20,15 @@ export async function GET(request: NextRequest) {
     const adminId = await verifyAdmin(request)
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const result = await query("SELECT * FROM delivery_settings WHERE is_active = true ORDER BY delivery_time_days ASC")
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (id) {
+      const result = await query("SELECT * FROM policies WHERE id = $1", [id])
+      return NextResponse.json(result.rows[0])
+    }
+
+    const result = await query("SELECT * FROM policies ORDER BY created_at DESC")
     return NextResponse.json(result.rows)
   } catch (error) {
     console.error("[v0] Error:", error)
@@ -33,11 +41,11 @@ export async function POST(request: NextRequest) {
     const adminId = await verifyAdmin(request)
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { name, description, delivery_time_days, cost, is_active } = await request.json()
+    const { type, title, slug, content, is_published } = await request.json()
     
     const res = await query(
-      "INSERT INTO delivery_settings (name, description, delivery_time_days, cost, is_active) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [name, description || null, delivery_time_days, cost, is_active ?? true]
+      "INSERT INTO policies (type, title, slug, content, is_published) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [type, title, slug || title.toLowerCase().replace(/\s+/g, '-'), content, is_published ?? true]
     )
     
     return NextResponse.json(res.rows[0], { status: 201 })
@@ -52,11 +60,11 @@ export async function PUT(request: NextRequest) {
     const adminId = await verifyAdmin(request)
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { id, name, description, delivery_time_days, cost, is_active } = await request.json()
+    const { id, type, title, slug, content, is_published } = await request.json()
     
     const res = await query(
-      "UPDATE delivery_settings SET name = $1, description = $2, delivery_time_days = $3, cost = $4, is_active = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *",
-      [name, description || null, delivery_time_days, cost, is_active, id]
+      "UPDATE policies SET type = $1, title = $2, slug = $3, content = $4, is_published = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *",
+      [type, title, slug || title.toLowerCase().replace(/\s+/g, '-'), content, is_published, id]
     )
     
     return NextResponse.json(res.rows[0])
@@ -75,11 +83,10 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id")
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 })
 
-    await query("DELETE FROM delivery_settings WHERE id = $1", [id])
+    await query("DELETE FROM policies WHERE id = $1", [id])
     return NextResponse.json({ message: "Deleted" })
   } catch (error) {
     console.error("[v0] Error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-

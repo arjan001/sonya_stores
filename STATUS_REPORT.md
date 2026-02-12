@@ -10,7 +10,7 @@ Sonya Stores admin panel and frontend have been successfully built from scratch 
 
 | Phase | Task | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Frontend Brand Transformation | ✅ Complete | Kallitos Fashion → Sonya Stores |
+| 1 | Frontend Brand Transformation | ✅ Complete | Kallitos Fashion → Sonya Stores (shoes & home decor) |
 | 1 | Generate Product Images | ✅ Complete | 17 images (categories + products + banners) |
 | 1 | Static Frontend Pages | ✅ Complete | 10+ pages, all responsive |
 | 1 | Homepage & Categories | ✅ Complete | Hero, featured, new arrivals, on-sale |

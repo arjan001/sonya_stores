@@ -21,20 +21,32 @@ const siteUrl = "https://sonyastores.com"
 
 export const metadata: Metadata = {
   title: {
-    default: "Sonya Stores | Quality Shoes & Home Decor at Unbeatable Prices",
+    default: "Sonya Stores | Quality Shoes & Luxury Home Decor in Nairobi",
     template: "%s | Sonya Stores",
   },
   description:
-    "Sonya Stores - Home for your most trusted Shoes Quality and Home Decor at unbeatable prices. Find us at Nature HSE opposite Agro HSE stall. Call 0723274619.",
+    "Shop the most trusted collection of premium footwear and elegant home decor at Sonya Stores. Unbeatable prices on quality shoes and home essentials. Visit us at Nature House, Stall 7, or call 0723274619.",
   keywords: [
-    "sonya stores", "Sonya Stores Kenya", "quality shoes Kenya",
-    "women shoes Nairobi", "men shoes Kenya", "sneakers Kenya",
-    "handbags Kenya", "home decor Kenya", "home accessories Nairobi",
-    "affordable shoes Kenya", "sandals Kenya", "leather shoes Nairobi",
-    "tote bags Kenya", "crossbody bags", "home decorations",
-    "fashion Nairobi", "online shopping Kenya", "shoe store Kenya",
+    "Quality shoes Nairobi", "home decor Kenya", "Sonya Stores Nairobi", "affordable luxury shoes", "Nature House stall 7",
+    "best shoe store Nairobi CBD", "elegant home interiors", "stylish sneakers Kenya", "office shoes for men",
+    "ladies heels Nairobi", "designer home decor", "interior design pieces", "trusted shoe vendors",
+    "Sonya Stores contact", "affordable home makeover", "trendy footwear 2026", "wall art Nairobi",
+    "decorative vases Kenya", "comfortable walking shoes", "leather shoes Nairobi", "modern home furniture",
+    "budget-friendly decor", "Sonya Stores Nature House", "Agro House opposite shops", "wholesale shoes Kenya",
+    "retail home decor", "premium bedding Nairobi", "shoe shop stall 7", "home lighting fixtures",
+    "sneakers for sale Kenya", "formal shoes Nairobi", "home styling tips", "Nairobi small business",
+    "luxury lifestyle decor", "durable footwear", "fashionable boots Kenya", "throw pillows Nairobi",
+    "kitchen decor Kenya", "bedroom essentials", "living room accessories", "Sonya Stores 0723274619",
+    "quality sneakers Nairobi", "authentic shoes Kenya", "home fragrance and candles", "decorative mirrors",
+    "minimalist home decor", "vintage shoe styles", "casual shoes for women", "men's official shoes",
+    "home improvement Kenya", "Nairobi CBD shopping", "cheap shoes Nairobi", "high-quality decor",
+    "unique gift items", "Sonya Stores reviews", "Nature House stall listings", "stylish home accents",
+    "outdoor footwear", "indoor slippers", "rug and carpet Nairobi", "curtain designs Kenya",
+    "shoe care products", "home organization tools", "trending decor 2026", "discounted shoes",
+    "festive home decor", "Nairobi fashion hub", "home decor delivery Kenya", "Sonya Stores online"
   ],
-  authors: [{ name: "Sonya Stores", url: siteUrl }],
+  authors: [{ name: "oneplusafrica tech solutions", url: "https://oneplusafrica.com" }],
+  creator: "oneplusafrica tech solutions",
   publisher: "Sonya Stores",
   metadataBase: new URL(siteUrl),
   alternates: { canonical: siteUrl },
@@ -43,14 +55,22 @@ export const metadata: Metadata = {
     locale: "en_KE",
     url: siteUrl,
     siteName: "Sonya Stores",
-    title: "Sonya Stores | Quality Shoes & Home Decor at Unbeatable Prices",
-    description: "Home for your most trusted Shoes Quality and Home Decor at unbeatable prices.",
+    title: "Sonya Stores | Trusted Shoes & Home Decor",
+    description: "Premium footwear and home essentials at unbeatable prices. Based in Nairobi, Nature House.",
+    images: [{
+      url: `${siteUrl}/og-image.jpg`,
+      width: 1200,
+      height: 630,
+      alt: "Sonya Stores - Quality Shoes & Home Decor"
+    }]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sonya Stores | Quality Shoes & Home Decor",
-    description: "Your most trusted source for quality shoes and home decor at unbeatable prices.",
+    site: "@sonyas.store",
     creator: "@sonyas.store",
+    title: "Sonya Stores - Quality Shoes & Decor",
+    description: "Shop unbeatable prices on quality shoes and home decor in Nairobi CBD.",
+    images: [`${siteUrl}/twitter-image.jpg`]
   },
   robots: {
     index: true,
@@ -59,6 +79,7 @@ export const metadata: Metadata = {
   },
   other: {
     "tiktok:creator": "@sonyas.store",
+    "article:author": "oneplusafrica tech solutions",
   },
 }
 
