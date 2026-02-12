@@ -38,6 +38,7 @@ export default function AdminLoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        credentials: 'include', // Important: include cookies in request
       })
 
       const data = await response.json()
@@ -47,13 +48,12 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Store token in localStorage
-      localStorage.setItem('admin_token', data.token)
-      
+      // Token is automatically set in HTTP-only cookie by the API
+      // Just redirect to dashboard
       router.push('/admin/dashboard')
     } catch (err) {
       setError('An error occurred during login')
-      console.error(err)
+      console.error('[v0] Login error:', err)
     } finally {
       setLoading(false)
     }
