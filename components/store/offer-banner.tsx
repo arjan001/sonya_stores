@@ -15,7 +15,7 @@ export function OfferBanner() {
             className="relative overflow-hidden rounded-sm min-h-[280px] flex items-center group"
           >
             <Image
-              src="https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800&h=400&fit=crop"
+              src="/banners/shoes-collection.jpg"
               alt="Shoes collection sale"
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -44,7 +44,7 @@ export function OfferBanner() {
             className="relative overflow-hidden rounded-sm min-h-[280px] flex items-center group"
           >
             <Image
-              src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800&h=400&fit=crop"
+              src="/banners/handbags-collection.jpg"
               alt="New handbags arrivals"
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
