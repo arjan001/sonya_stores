@@ -175,38 +175,7 @@ export function DeliveryModule() {
             </tbody>
           </table>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {deliveries.map((delivery) => (
-            <div key={delivery.id} className="border rounded-lg p-4 hover:shadow-md transition">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-lg">{delivery.name}</h3>
-                  <p className="text-sm text-muted-foreground">{delivery.delivery_time_days} day(s)</p>
-                </div>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  delivery.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
-                }`}>
-                  {delivery.is_active ? "Active" : "Inactive"}
-                </span>
-              </div>
-              {delivery.description && (
-                <p className="text-sm text-muted-foreground mb-3">{delivery.description}</p>
-              )}
-              <div className="mb-4">
-                <p className="text-2xl font-bold text-green-600">KSh {delivery.cost}</p>
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleEdit(delivery)} className="flex-1">
-                  <Edit2 className="h-4 w-4 mr-1" /> Edit
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => handleDelete(delivery.id)} className="text-red-500 flex-1">
-                  <Trash2 className="h-4 w-4 mr-1" /> Delete
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>}
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
