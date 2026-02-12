@@ -281,10 +281,10 @@ export function ProductsModule() {
                       </div>
                     </td>
                     <td className="px-6 py-3 text-right">
-                      KSh {product.price.toFixed(2)}
+                      KSh {(parseFloat(product.price) || 0).toFixed(2)}
                       {product.discount_price && (
                         <div className="text-xs text-muted-foreground line-through">
-                          KSh {product.discount_price.toFixed(2)}
+                          KSh {(parseFloat(product.discount_price) || 0).toFixed(2)}
                         </div>
                       )}
                     </td>
