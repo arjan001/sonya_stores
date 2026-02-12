@@ -1,111 +1,58 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, rateLimit, rateLimitResponse } from "@/lib/security"
+import { jwtVerify } from "jose"
+import { getOrders, getOrdersCount, getOrder, updateOrderStatus } from "@/lib/admin-db"
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
+
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    const verified = await jwtVerify(token, secret)
+    return verified.payload.sub as string
+  } catch {
+    return null
+  }
+}
 
 export async function GET(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 30, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-  const supabase = await createClient()
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { data: orders, error } = await supabase
-    .from("orders")
-    .select("*, delivery_locations(name)")
-    .order("created_at", { ascending: false })
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get("limit") || "50")
+    const offset = parseInt(searchParams.get("offset") || "0")
+    const status = searchParams.get("status")
+    const id = searchParams.get("id")
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (id) {
+      const order = await getOrder(id)
+      return NextResponse.json(order)
+    }
 
-  // Get order items for each order
-  const orderIds = (orders || []).map((o) => o.id)
-  const { data: items } = await supabase
-    .from("order_items")
-    .select("*")
-    .in("order_id", orderIds.length > 0 ? orderIds : ["none"])
+    const orders = await getOrders(limit, offset, status || undefined)
+    const count = await getOrdersCount(status || undefined)
 
-  const itemsByOrder: Record<string, typeof items> = {}
-  for (const item of items || []) {
-    if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = []
-    itemsByOrder[item.order_id].push(item)
+    return NextResponse.json({ orders, count })
+  } catch (error) {
+    console.error("[v0] Error fetching orders:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const result = (orders || []).map((o) => ({
-    id: o.id,
-    orderNo: o.order_number,
-    customer: o.customer_name,
-    phone: o.customer_phone,
-    email: o.customer_email || "",
-    items: (itemsByOrder[o.id] || []).map((item) => ({
-      name: item.product_name,
-      qty: item.quantity,
-      price: Number(item.unit_price),
-      variation: item.variation || undefined,
-      image: item.product_image || undefined,
-    })),
-    subtotal: Number(o.subtotal),
-    delivery: Number(o.delivery_fee),
-    total: Number(o.total),
-    location: o.delivery_locations?.name || o.delivery_address || "",
-    address: o.delivery_address || "",
-    notes: o.notes || "",
-    status: o.status,
-    orderedVia: o.ordered_via || "website",
-    paymentMethod: o.payment_method || "cod",
-    mpesaCode: o.mpesa_code || "",
-    mpesaPhone: o.mpesa_phone || "",
-    mpesaMessage: o.mpesa_message || "",
-    date: o.created_at ? new Date(o.created_at).toISOString().split("T")[0] : "",
-  }))
-
-  return NextResponse.json(result)
 }
 
-export async function DELETE(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
+export async function PUT(request: NextRequest) {
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-  const ids = searchParams.get("ids")
+    const { id, status } = await request.json()
+    if (!id || !status) return NextResponse.json({ error: "Missing id or status" }, { status: 400 })
 
-  if (!ids) return NextResponse.json({ error: "Missing ids" }, { status: 400 })
-
-  const idArray = ids.split(",")
-
-  // Delete order items first (foreign key)
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .delete()
-    .in("order_id", idArray)
-
-  if (itemsError) return NextResponse.json({ error: itemsError.message }, { status: 500 })
-
-  // Delete orders
-  const { error } = await supabase
-    .from("orders")
-    .delete()
-    .in("id", idArray)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true, deleted: idArray.length })
-}
-
-export async function PATCH(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-
-  const supabase = await createClient()
-  const body = await request.json()
-
-  if (!body.id || !body.status) {
-    return NextResponse.json({ error: "Missing id or status" }, { status: 400 })
+    await updateOrderStatus(id, status)
+    return NextResponse.json({ message: "Order updated" })
+  } catch (error) {
+    console.error("[v0] Error updating order:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const { error } = await supabase
-    .from("orders")
-    .update({ status: body.status })
-    .eq("id", body.id)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
 }

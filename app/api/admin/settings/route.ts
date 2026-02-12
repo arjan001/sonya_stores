@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
+import { jwtVerify } from "jose"
 import { query } from "@/lib/db"
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
+
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    const verified = await jwtVerify(token, secret)
+    return verified.payload.sub as string
+  } catch {
+    return null
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
     const result = await query(
       'SELECT key, value FROM settings ORDER BY category, key'
     )
@@ -15,24 +32,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(settings)
   } catch (error) {
     console.error('[v0] Error fetching settings:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '') || 
-                  request.headers.get('X-Admin-Token')
-
-    if (!token) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const settingsData = await request.json()
     const updates: Promise<any>[] = []
@@ -48,13 +55,9 @@ export async function PUT(request: NextRequest) {
     }
 
     await Promise.all(updates)
-
-    return NextResponse.json({ message: 'Settings updated successfully' })
+    return NextResponse.json({ message: "Settings updated successfully" })
   } catch (error) {
     console.error('[v0] Error updating settings:', error)
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

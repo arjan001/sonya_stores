@@ -1,5 +1,10 @@
-import { AdminSettings } from "@/components/admin/settings"
+import { AdminShell } from "@/components/admin/admin-shell"
+import { SettingsModule } from "@/components/admin/modules/settings-module"
 
-export default function Page() {
-  return <AdminSettings />
+export default function SettingsPage() {
+  return (
+    <AdminShell title="Settings">
+      <SettingsModule />
+    </AdminShell>
+  )
 }

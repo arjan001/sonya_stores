@@ -1,16 +1,8 @@
-import { updateSession } from '@/lib/supabase/middleware'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response: NextResponse
-
-  // Only use Supabase middleware if env vars are configured
-  const hasSupabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (hasSupabase) {
-    response = await updateSession(request)
-  } else {
-    response = NextResponse.next({ request })
-  }
+  // Create response
+  let response = NextResponse.next({ request })
 
   // Add security headers to all responses
   response.headers.set('X-Frame-Options', 'DENY')
@@ -23,17 +15,19 @@ export async function middleware(request: NextRequest) {
     'max-age=31536000; includeSubDomains; preload'
   )
 
-  // Block admin API access for non-authenticated users at middleware level
-  if (request.nextUrl.pathname.startsWith('/api/admin')) {
-    const authCookie = request.cookies.getAll().find(c => c.name.startsWith('sb-'))
-    if (!authCookie) {
-      return NextResponse.json({ error: 'Unauthorized' }, {
-        status: 401,
-        headers: {
-          'X-Frame-Options': 'DENY',
-          'X-Content-Type-Options': 'nosniff',
-        }
-      })
+  // Check authentication for admin routes
+  if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/api/admin')) {
+    const token = request.cookies.get('admin_token')?.value
+    
+    // Allow register and login without token
+    if (request.nextUrl.pathname === '/admin/register' || request.nextUrl.pathname === '/admin/login' || 
+        request.nextUrl.pathname === '/api/admin/register' || request.nextUrl.pathname === '/api/admin/login') {
+      return response
+    }
+
+    // Require token for all other admin routes
+    if (!token) {
+      return NextResponse.redirect(new URL('/admin/login', request.url))
     }
   }
 

@@ -1,177 +1,88 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth, rateLimit, rateLimitResponse } from "@/lib/security"
+import { jwtVerify } from "jose"
+import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from "@/lib/admin-db"
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
+
+async function verifyAdmin(request: NextRequest) {
+  try {
+    const token = request.cookies.get("admin_token")?.value
+    if (!token) return null
+    const verified = await jwtVerify(token, secret)
+    return verified.payload.sub as string
+  } catch {
+    return null
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get("limit") || "100")
+    const offset = parseInt(searchParams.get("offset") || "0")
+    const id = searchParams.get("id")
+
+    if (id) {
+      const product = await getProduct(id)
+      return NextResponse.json(product)
+    }
+
+    const products = await getProducts(limit, offset)
+    return NextResponse.json(products)
+  } catch (error) {
+    console.error("[v0] Error fetching products:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
 
 export async function POST(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 20, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-
-  const supabase = await createClient()
-  const body = await request.json()
-
   try {
-    // Find category ID by slug
-    const { data: category } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", body.categorySlug)
-      .single()
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    // Insert product
-    const { data: product, error: productError } = await supabase
-      .from("products")
-      .insert({
-        name: body.name,
-        slug: body.slug,
-        price: body.price,
-        original_price: body.originalPrice || null,
-        description: body.description || "",
-        category_id: category?.id || null,
-        is_new: body.isNew || false,
-        is_on_offer: body.isOnOffer || false,
-        offer_percentage: body.offerPercentage || 0,
-        in_stock: body.inStock ?? true,
-        collection: body.collection || "unisex",
-        is_featured: false,
-        condition: "new",
-      })
-      .select()
-      .single()
+    const data = await request.json()
+    const id = await createProduct(data)
 
-    if (productError) throw productError
-
-    // Insert images
-    if (body.images?.length) {
-      const imageRows = body.images.map((url: string, i: number) => ({
-        product_id: product.id,
-        url,
-        alt_text: `${body.name} - Image ${i + 1}`,
-        sort_order: i,
-      }))
-      await supabase.from("product_images").insert(imageRows)
-    }
-
-    // Insert variations
-    if (body.variations?.length) {
-      const variationRows: { product_id: string; label: string; value: string; extra_price: number; in_stock: boolean }[] = []
-      for (const v of body.variations) {
-        for (const opt of v.options) {
-          variationRows.push({
-            product_id: product.id,
-            label: v.type,
-            value: opt,
-            extra_price: 0,
-            in_stock: true,
-          })
-        }
-      }
-      if (variationRows.length) {
-        await supabase.from("product_variations").insert(variationRows)
-      }
-    }
-
-    return NextResponse.json({ id: product.id })
+    return NextResponse.json({ id, message: "Product created" })
   } catch (error) {
-    console.error("Create product error:", error)
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 })
+    console.error("[v0] Error creating product:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function PUT(request: NextRequest) {
-  const rl = rateLimit(request, { limit: 20, windowSeconds: 60 })
-  if (!rl.success) return rateLimitResponse()
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-
-  const supabase = await createClient()
-  const body = await request.json()
-
   try {
-    const { data: category } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", body.categorySlug)
-      .single()
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    // Update product
-    const { error: updateError } = await supabase
-      .from("products")
-      .update({
-        name: body.name,
-        slug: body.slug,
-        price: body.price,
-        original_price: body.originalPrice || null,
-        description: body.description || "",
-        category_id: category?.id || null,
-        is_new: body.isNew || false,
-        is_on_offer: body.isOnOffer || false,
-        offer_percentage: body.offerPercentage || 0,
-        in_stock: body.inStock ?? true,
-        collection: body.collection || "unisex",
-      })
-      .eq("id", body.id)
+    const { id, ...data } = await request.json()
+    await updateProduct(id, data)
 
-    if (updateError) throw updateError
-
-    // Replace images
-    await supabase.from("product_images").delete().eq("product_id", body.id)
-    if (body.images?.length) {
-      const imageRows = body.images.map((url: string, i: number) => ({
-        product_id: body.id,
-        url,
-        alt_text: `${body.name} - Image ${i + 1}`,
-        sort_order: i,
-      }))
-      await supabase.from("product_images").insert(imageRows)
-    }
-
-    // Replace variations
-    await supabase.from("product_variations").delete().eq("product_id", body.id)
-    if (body.variations?.length) {
-      const variationRows: { product_id: string; label: string; value: string; extra_price: number; in_stock: boolean }[] = []
-      for (const v of body.variations) {
-        for (const opt of v.options) {
-          variationRows.push({
-            product_id: body.id,
-            label: v.type,
-            value: opt,
-            extra_price: 0,
-            in_stock: true,
-          })
-        }
-      }
-      if (variationRows.length) {
-        await supabase.from("product_variations").insert(variationRows)
-      }
-    }
-
-    return NextResponse.json({ id: body.id })
+    return NextResponse.json({ message: "Product updated" })
   } catch (error) {
-    console.error("Update product error:", error)
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 })
+    console.error("[v0] Error updating product:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  const auth = await requireAuth()
-  if (!auth.authenticated) return auth.response!
-
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-  const id = searchParams.get("id")
-
-  if (!id) {
-    return NextResponse.json({ error: "Missing product ID" }, { status: 400 })
-  }
-
   try {
-    const { error } = await supabase.from("products").delete().eq("id", id)
-    if (error) throw error
-    return NextResponse.json({ success: true })
+    const adminId = await verifyAdmin(request)
+    if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 })
+
+    await deleteProduct(id)
+    return NextResponse.json({ message: "Product deleted" })
   } catch (error) {
-    console.error("Delete product error:", error)
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 })
+    console.error("[v0] Error deleting product:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
