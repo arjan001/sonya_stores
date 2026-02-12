@@ -55,7 +55,10 @@ export function OrdersModule() {
         ...(statusFilter && { status: statusFilter }),
         ...(searchTerm && { search: searchTerm }),
       })
-      const res = await fetch(`/api/admin/orders?${params}`)
+      const res = await fetch(`/api/admin/orders?${params}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (!res.ok) throw new Error("Failed to fetch orders")
       const { orders: data, total: count } = await res.json()
       setOrders(data)
@@ -72,6 +75,7 @@ export function OrdersModule() {
       setUpdating(true)
       const res = await fetch("/api/admin/orders", {
         method: "PUT",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: orderId, status: newStatus }),
       })
