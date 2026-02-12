@@ -28,10 +28,13 @@ const navItems = [
   { label: "Products", href: "/admin/products", icon: Package },
   { label: "Categories", href: "/admin/categories", icon: Tag },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart, hasBadge: true },
-  { label: "Banners", href: "/admin/banners", icon: ImageIcon },
+  { label: "Offers & Banners", href: "/admin/offers", icon: Percent },
+  { label: "Delivery", href: "/admin/delivery", icon: Truck },
+  { label: "Newsletter", href: "/admin/newsletter", icon: Megaphone },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { label: "Policies", href: "/admin/policies", icon: FileText },
+  { label: "Users & Roles", href: "/admin/users", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
-  { label: "Users", href: "/admin/users", icon: Users },
 ]
 
 interface CurrentUser {
