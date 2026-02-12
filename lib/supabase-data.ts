@@ -158,24 +158,62 @@ export async function getSiteSettings() {
 }
 
 export async function createOrder(order: {
-  customerName: string; customerPhone: string; deliveryAddress: string;
-  deliveryFee: number; subtotal: number; total: number; notes?: string;
-  items: { productId: string; quantity: number; unitPrice: number }[]
+  customerName: string
+  customerEmail?: string
+  customerPhone: string
+  deliveryLocationId?: string
+  deliveryAddress: string
+  deliveryFee: number
+  subtotal: number
+  total: number
+  notes?: string
+  orderedVia?: string
+  paymentMethod?: string
+  mpesaCode?: string
+  mpesaPhone?: string
+  mpesaMessage?: string
+  items: { productId: string; name?: string; quantity: number; price?: number; unitPrice?: number; variation?: string; image?: string }[]
 }) {
-  const orderNumber = `SS-${Date.now().toString(36).toUpperCase()}`
-  const orderResult = await query(
-    `INSERT INTO orders (order_number, shipping_address, shipping_amount, total_amount, notes, status, payment_status)
-     VALUES ($1, $2, $3, $4, $5, 'pending', 'pending') RETURNING id`,
-    [orderNumber, order.deliveryAddress, order.deliveryFee, order.total, order.notes || null]
-  )
-  const orderId = orderResult.rows[0].id
-  for (const item of order.items) {
-    await query(
-      `INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) VALUES ($1, $2, $3, $4, $5)`,
-      [orderId, item.productId, item.quantity, item.unitPrice, item.quantity * item.unitPrice]
+  try {
+    const orderNumber = `SS-${Date.now().toString(36).toUpperCase()}`
+
+    // Find or create customer
+    let customerId: string | null = null
+    try {
+      const existing = await query(`SELECT id FROM customers WHERE phone = $1 LIMIT 1`, [order.customerPhone])
+      if (existing.rows.length > 0) {
+        customerId = existing.rows[0].id
+      } else {
+        const newCust = await query(
+          `INSERT INTO customers (first_name, email, phone, address) VALUES ($1, $2, $3, $4) RETURNING id`,
+          [order.customerName, order.customerEmail || null, order.customerPhone, order.deliveryAddress]
+        )
+        customerId = newCust.rows[0].id
+      }
+    } catch (e) {
+      console.error("[v0] Customer creation error (non-critical):", e)
+    }
+
+    const orderResult = await query(
+      `INSERT INTO orders (order_number, customer_id, shipping_address, shipping_amount, total_amount, notes, status, payment_status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'pending') RETURNING id`,
+      [orderNumber, customerId, order.deliveryAddress, order.deliveryFee, order.total, order.notes || null]
     )
+    const orderId = orderResult.rows[0].id
+
+    for (const item of order.items) {
+      const unitPrice = item.unitPrice || item.price || 0
+      await query(
+        `INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal) VALUES ($1, $2, $3, $4, $5)`,
+        [orderId, item.productId, item.quantity, unitPrice, item.quantity * unitPrice]
+      )
+    }
+
+    return { orderNumber, orderId }
+  } catch (error) {
+    console.error("[v0] Error creating order:", error)
+    throw error
   }
-  return { orderNumber, orderId }
 }
 
 export async function getHeroBanners(): Promise<HeroBanner[]> {
