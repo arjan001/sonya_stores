@@ -48,28 +48,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-      totalRevenue,
-    },
-    recentProducts: products.slice(0, 5).map((p) => ({
-      id: p.id,
-      name: p.name,
-      price: Number(p.price),
-      category: (p as Record<string, unknown> & { categories?: { name: string } }).categories?.name || "",
-    })),
-    offerProducts: offerProducts.slice(0, 5).map((p) => ({
-      id: p.id,
-      name: p.name,
-      price: Number(p.price),
-      originalPrice: p.original_price ? Number(p.original_price) : null,
-      offerPercentage: p.offer_percentage,
-    })),
-    recentOrders: orders.slice(0, 5).map((o) => ({
-      id: o.id,
-      orderNo: o.order_number,
-      customer: o.customer_name,
-      total: Number(o.total),
-      status: o.status,
-      date: o.created_at,
-    })),
-  })
-}

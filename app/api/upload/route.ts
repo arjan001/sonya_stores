@@ -31,33 +31,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
   }
 }
-
-    // Sanitize folder name
-    const folder = (productSlug || "general").replace(/[^a-z0-9\-]/gi, "").slice(0, 100)
-    const ext = file.name.split(".").pop()?.replace(/[^a-z0-9]/gi, "") || "jpg"
-    const filename = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
-
-    const buffer = Buffer.from(await file.arrayBuffer())
-
-    const { error } = await supabase.storage
-      .from("products")
-      .upload(filename, buffer, {
-        contentType: file.type,
-        upsert: false,
-      })
-
-    if (error) {
-      console.error("Upload error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    const { data: urlData } = supabase.storage
-      .from("products")
-      .getPublicUrl(filename)
-
-    return NextResponse.json({ url: urlData.publicUrl })
-  } catch (error) {
-    console.error("Upload failed:", error)
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 })
-  }
-}
