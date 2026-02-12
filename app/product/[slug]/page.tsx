@@ -73,9 +73,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             name: "Kallittos Fashions",
             url: SITE_URL,
           },
-          itemCondition: product.condition === "thrift"
-            ? "https://schema.org/UsedCondition"
-            : "https://schema.org/NewCondition",
+          itemCondition: "https://schema.org/NewCondition",
         },
         category: product.category,
       }
