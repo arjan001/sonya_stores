@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose"
-import { getCategories, getCategory, createCategory, updateCategory, deleteCategory } from "@/lib/admin-db"
+import { getAllCategories, getCategory, createCategory, updateCategory, deleteCategory } from "@/lib/admin-db"
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-secret-key")
 
@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(category)
     }
 
-    const categories = await getCategories()
+    // Return all categories including inactive ones for admin
+    const categories = await getAllCategories()
     return NextResponse.json(categories)
   } catch (error) {
     console.error("[v0] Error fetching categories:", error)
@@ -42,9 +43,9 @@ export async function POST(request: NextRequest) {
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const data = await request.json()
-    const id = await createCategory(data)
+    const result = await createCategory(data)
 
-    return NextResponse.json({ id, message: "Category created" })
+    return NextResponse.json({ id: result.id, message: "Category created", category: result }, { status: 201 })
   } catch (error) {
     console.error("[v0] Error creating category:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -57,9 +58,9 @@ export async function PUT(request: NextRequest) {
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { id, ...data } = await request.json()
-    await updateCategory(id, data)
+    const result = await updateCategory(id, data)
 
-    return NextResponse.json({ message: "Category updated" })
+    return NextResponse.json({ message: "Category updated", category: result })
   } catch (error) {
     console.error("[v0] Error updating category:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

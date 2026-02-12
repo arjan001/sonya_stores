@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50")
     const offset = parseInt(searchParams.get("offset") || "0")
     const status = searchParams.get("status")
+    const search = searchParams.get("search")
     const id = searchParams.get("id")
 
     if (id) {
@@ -31,10 +32,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(order)
     }
 
-    const orders = await getOrders(limit, offset, status || undefined)
-    const count = await getOrdersCount(status || undefined)
+    const orders = await getOrders(limit, offset, status || undefined, search || undefined)
+    const total = await getOrdersCount(status || undefined, search || undefined)
 
-    return NextResponse.json({ orders, count })
+    return NextResponse.json({ orders, total })
   } catch (error) {
     console.error("[v0] Error fetching orders:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -49,8 +50,8 @@ export async function PUT(request: NextRequest) {
     const { id, status } = await request.json()
     if (!id || !status) return NextResponse.json({ error: "Missing id or status" }, { status: 400 })
 
-    await updateOrderStatus(id, status)
-    return NextResponse.json({ message: "Order updated" })
+    const result = await updateOrderStatus(id, status)
+    return NextResponse.json({ message: "Order updated", order: result })
   } catch (error) {
     console.error("[v0] Error updating order:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
