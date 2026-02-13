@@ -275,9 +275,18 @@ export function ProductsModule() {
                 {products.map((product) => (
                   <tr key={product.id} className="border-t hover:bg-muted/50">
                     <td className="px-6 py-3 font-medium">
-                      <div className="flex items-center gap-2">
-                        {product.image_url && <img src={product.image_url} alt={product.name} className="h-8 w-8 rounded" />}
-                        <span>{product.name}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="h-10 w-10 rounded object-cover" />
+                          ) : (
+                            <Package className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">{product.sku || 'N/A'}</p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-3 text-right">
@@ -446,6 +455,12 @@ export function ProductsModule() {
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 />
+                {formData.imageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={formData.imageUrl} alt="Preview" className="h-16 w-16 rounded object-cover border" />
+                    <p className="text-xs text-muted-foreground">Preview</p>
+                  </div>
+                )}
               </div>
             </div>
 
