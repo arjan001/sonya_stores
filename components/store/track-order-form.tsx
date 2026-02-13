@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
-import { Search, Package, Truck, CheckCircle, Clock, XCircle, Loader2, Phone, Hash } from "lucide-react"
+import { Search, Package, CheckCircle, Clock, XCircle, Loader2, Phone, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
