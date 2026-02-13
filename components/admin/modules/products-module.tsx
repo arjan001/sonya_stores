@@ -297,7 +297,17 @@ export function ProductsModule() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-3 text-right">{product.stock_quantity}</td>
+                    <td className="px-6 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {product.stock_quantity <= 0 ? (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">Out of Stock</span>
+                        ) : product.stock_quantity <= 5 ? (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700">Low Stock</span>
+                        ) : (
+                          <span className="text-sm font-medium">{product.stock_quantity} units</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-3 text-center">
                       <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                         product.status === 'active' ? 'bg-green-100 text-green-700' : 

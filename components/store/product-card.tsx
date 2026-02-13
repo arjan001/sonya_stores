@@ -26,6 +26,16 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+            {product.stockQuantity <= 0 && (
+              <span className="bg-red-600 text-white text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1">
+                Out of Stock
+              </span>
+            )}
+            {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+              <span className="bg-orange-600 text-white text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1">
+                Low Stock
+              </span>
+            )}
             {product.isNew && (
               <span className="bg-foreground text-background text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1">
                 New
@@ -64,12 +74,17 @@ export function ProductCard({ product }: { product: Product }) {
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                addItem(product)
+                if (product.stockQuantity > 0) addItem(product)
               }}
-              className="w-full flex items-center justify-center gap-2 bg-foreground text-background py-2.5 text-xs font-medium uppercase tracking-wider hover:bg-foreground/90 transition-colors"
+              disabled={product.stockQuantity <= 0}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 text-xs font-medium uppercase tracking-wider transition-colors ${
+                product.stockQuantity <= 0 
+                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                  : 'bg-foreground text-background hover:bg-foreground/90'
+              }`}
             >
               <ShoppingBag className="h-3.5 w-3.5" />
-              Add to Cart
+              {product.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
           </div>
         </div>
