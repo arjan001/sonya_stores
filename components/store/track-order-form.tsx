@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
-import { Search, Package, Truck, CheckCircle, Clock, XCircle, Loader2, Phone, Hash } from "lucide-react"
+import { Search, Package, CheckCircle, Clock, XCircle, Loader2, Phone, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-type OrderStatus = "pending" | "confirmed" | "dispatched" | "delivered" | "cancelled"
+type OrderStatus = "pending" | "processing" | "completed" | "cancelled"
 
 interface OrderItem {
   name: string
@@ -33,16 +33,14 @@ interface TrackedOrder {
 
 const statusSteps: { key: OrderStatus; label: string; icon: typeof Clock }[] = [
   { key: "pending", label: "Order Placed", icon: Clock },
-  { key: "confirmed", label: "Confirmed", icon: Package },
-  { key: "dispatched", label: "Dispatched", icon: Truck },
-  { key: "delivered", label: "Delivered", icon: CheckCircle },
+  { key: "processing", label: "Processing", icon: Package },
+  { key: "completed", label: "Delivered", icon: CheckCircle },
 ]
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string }> = {
   pending: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  confirmed: { label: "Confirmed", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
-  dispatched: { label: "Dispatched", color: "text-purple-700", bg: "bg-purple-50 border-purple-200" },
-  delivered: { label: "Delivered", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
+  processing: { label: "Processing", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" },
+  completed: { label: "Completed", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
   cancelled: { label: "Cancelled", color: "text-red-700", bg: "bg-red-50 border-red-200" },
 }
 

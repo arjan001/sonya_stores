@@ -142,6 +142,16 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                     -{product.offerPercentage}%
                   </span>
                 )}
+                {product.stockQuantity <= 0 && (
+                  <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-semibold tracking-wider uppercase px-3 py-1.5">
+                    Out of Stock
+                  </span>
+                )}
+                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                  <span className="absolute top-4 left-4 bg-orange-600 text-white text-xs font-semibold tracking-wider uppercase px-3 py-1.5">
+                    Low Stock ({product.stockQuantity} left)
+                  </span>
+                )}
                 {product.isNew && (
                   <span className="absolute top-4 right-4 bg-foreground text-background text-xs font-semibold tracking-wider uppercase px-3 py-1.5">
                     New
@@ -246,10 +256,15 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               <div className="flex gap-3 mt-8">
                 <Button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-foreground text-background hover:bg-foreground/90 h-12 text-sm font-medium"
+                  disabled={product.stockQuantity <= 0}
+                  className={`flex-1 h-12 text-sm font-medium ${
+                    product.stockQuantity <= 0 
+                      ? 'bg-gray-300 text-gray-600 cursor-not-allowed hover:bg-gray-300' 
+                      : 'bg-foreground text-background hover:bg-foreground/90'
+                  }`}
                 >
                   <ShoppingBag className="h-4 w-4 mr-2" />
-                  Add to Cart
+                  {product.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
                 </Button>
                 <a
                   href={`https://wa.me/254713809695?text=${whatsappMessage}`}

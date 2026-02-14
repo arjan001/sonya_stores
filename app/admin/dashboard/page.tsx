@@ -1,13 +1,12 @@
 'use client'
 
-import { redirect, usePathname } from 'next/navigation'
 import { AdminShell } from '@/components/admin/admin-shell'
-import { AnalyticsModule } from '@/components/admin/modules/analytics-module'
+import { DashboardOverview } from '@/components/admin/modules/dashboard-overview'
 
 export default function AdminDashboard() {
   return (
     <AdminShell title="Dashboard">
-      <AnalyticsModule />
+      <DashboardOverview />
     </AdminShell>
   )
 }

@@ -275,20 +275,39 @@ export function ProductsModule() {
                 {products.map((product) => (
                   <tr key={product.id} className="border-t hover:bg-muted/50">
                     <td className="px-6 py-3 font-medium">
-                      <div className="flex items-center gap-2">
-                        {product.image_url && <img src={product.image_url} alt={product.name} className="h-8 w-8 rounded" />}
-                        <span>{product.name}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="h-10 w-10 rounded object-cover" />
+                          ) : (
+                            <Package className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{product.name}</p>
+                          <p className="text-xs text-muted-foreground">{product.sku || 'N/A'}</p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-3 text-right">
-                      KSh {product.price.toFixed(2)}
+                      KSh {(parseFloat(product.price) || 0).toFixed(2)}
                       {product.discount_price && (
                         <div className="text-xs text-muted-foreground line-through">
-                          KSh {product.discount_price.toFixed(2)}
+                          KSh {(parseFloat(product.discount_price) || 0).toFixed(2)}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-3 text-right">{product.stock_quantity}</td>
+                    <td className="px-6 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {product.stock_quantity <= 0 ? (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">Out of Stock</span>
+                        ) : product.stock_quantity <= 5 ? (
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700">Low Stock</span>
+                        ) : (
+                          <span className="text-sm font-medium">{product.stock_quantity} units</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-3 text-center">
                       <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                         product.status === 'active' ? 'bg-green-100 text-green-700' : 
@@ -446,6 +465,12 @@ export function ProductsModule() {
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 />
+                {formData.imageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={formData.imageUrl} alt="Preview" className="h-16 w-16 rounded object-cover border" />
+                    <p className="text-xs text-muted-foreground">Preview</p>
+                  </div>
+                )}
               </div>
             </div>
 

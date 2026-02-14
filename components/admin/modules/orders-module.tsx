@@ -171,7 +171,7 @@ export function OrdersModule() {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Status</SelectItem>
+            {statusFilter && <SelectItem value="">All Status</SelectItem>}
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
