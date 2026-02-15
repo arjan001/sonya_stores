@@ -10,8 +10,14 @@ function mapProduct(row: Record<string, unknown>): Product {
   if (row.images) {
     try {
       const parsed = typeof row.images === "string" ? JSON.parse(row.images) : row.images
-      if (Array.isArray(parsed) && parsed.length > 0) images = parsed
-    } catch { /* fallback */ }
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        images = parsed
+      } else if (row.image_url) {
+        images = [row.image_url as string]
+      }
+    } catch {
+      if (row.image_url) images = [row.image_url as string]
+    }
   } else if (row.image_url) {
     images = [row.image_url as string]
   }
