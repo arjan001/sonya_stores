@@ -18,10 +18,14 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={`/product/${product.slug}`}>
         <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-secondary">
           <Image
-            src={product.images[0] || "/placeholder.svg"}
+            src={product.images?.[0] || "/placeholder.svg?height=800&width=600"}
             alt={product.name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg?height=800&width=600"
+            }}
           />
 
           {/* Badges */}

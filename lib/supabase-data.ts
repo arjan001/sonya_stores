@@ -10,10 +10,12 @@ function mapProduct(row: Record<string, unknown>): Product {
   if (row.images) {
     try {
       const parsed = typeof row.images === "string" ? JSON.parse(row.images) : row.images
-      if (Array.isArray(parsed) && parsed.length > 0) images = parsed
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]) images = parsed
     } catch { /* fallback */ }
-  } else if (row.image_url) {
-    images = [row.image_url as string]
+  } else if (row.image_url && row.image_url !== "") {
+    // Ensure image_url is a valid, non-empty string
+    const imageUrl = (row.image_url as string).trim()
+    if (imageUrl) images = [imageUrl]
   }
 
   let tags: string[] = []
@@ -41,6 +43,7 @@ function mapProduct(row: Record<string, unknown>): Product {
     isOnOffer: (row.is_on_sale as boolean) || false,
     offerPercentage: salePrice ? Math.round((1 - salePrice / basePrice) * 100) : undefined,
     inStock: Number(row.stock_quantity ?? 0) > 0,
+    stockQuantity: Number(row.stock_quantity ?? 0),
     createdAt: (row.created_at as string) || "",
   }
 }
