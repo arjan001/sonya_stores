@@ -166,12 +166,12 @@ export function OrdersModule() {
             className="flex-1"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }} suppressHydrationWarning>
+        <Select value={statusFilter || ""} onValueChange={(v) => { setStatusFilter(v === "" ? "" : v); setPage(0) }} suppressHydrationWarning>
           <SelectTrigger suppressHydrationWarning>
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            {statusFilter && <SelectItem value="">All Status</SelectItem>}
+            <SelectItem value="">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
