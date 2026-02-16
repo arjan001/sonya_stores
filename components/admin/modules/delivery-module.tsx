@@ -154,7 +154,7 @@ export function DeliveryModule() {
                     </div>
                   </td>
                   <td className="px-6 py-3 text-center">{delivery.delivery_time_days} day(s)</td>
-                  <td className="px-6 py-3 text-right font-semibold">KSh {delivery.cost.toFixed(2)}</td>
+                  <td className="px-6 py-3 text-right font-semibold">KSh {(parseFloat(delivery.cost) || 0).toFixed(2)}</td>
                   <td className="px-6 py-3 text-center">
                     <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                       delivery.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
