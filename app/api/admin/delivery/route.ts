@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const adminId = await verifyAdmin(request)
     if (!adminId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const result = await query("SELECT * FROM delivery_settings WHERE is_active = true ORDER BY delivery_time_days ASC")
+    const result = await query("SELECT * FROM delivery_settings ORDER BY delivery_time_days ASC")
     return NextResponse.json(result.rows)
   } catch (error) {
     console.error("[v0] Error:", error)
@@ -82,4 +82,3 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
-
