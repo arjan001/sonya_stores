@@ -34,6 +34,11 @@ export function DeliveryModule() {
     fetchDeliveries()
   }, [])
 
+  const toNumber = (value: unknown, fallback = 0) => {
+    const parsed = typeof value === "number" ? value : Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
   const fetchDeliveries = async () => {
     try {
       setLoading(true)
@@ -43,7 +48,14 @@ export function DeliveryModule() {
       })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
-      setDeliveries(data)
+      const normalized = Array.isArray(data)
+        ? data.map((delivery) => ({
+            ...delivery,
+            delivery_time_days: toNumber(delivery.delivery_time_days, 1),
+            cost: toNumber(delivery.cost, 0),
+          }))
+        : []
+      setDeliveries(normalized)
     } catch (error) {
       console.error("[v0] Error:", error)
     } finally {
@@ -78,8 +90,8 @@ export function DeliveryModule() {
     setFormData({
       name: delivery.name,
       description: delivery.description || "",
-      delivery_time_days: delivery.delivery_time_days,
-      cost: delivery.cost,
+      delivery_time_days: toNumber(delivery.delivery_time_days, 1),
+      cost: toNumber(delivery.cost, 0),
       is_active: delivery.is_active,
     })
     setEditingId(delivery.id)
@@ -207,7 +219,7 @@ export function DeliveryModule() {
                   type="number"
                   min="1"
                   value={formData.delivery_time_days}
-                  onChange={(e) => setFormData({ ...formData, delivery_time_days: parseInt(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, delivery_time_days: toNumber(e.target.value, 1) })}
                 />
               </div>
               <div>
@@ -217,7 +229,7 @@ export function DeliveryModule() {
                   min="0"
                   step="0.01"
                   value={formData.cost}
-                  onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, cost: toNumber(e.target.value, 0) })}
                 />
               </div>
             </div>

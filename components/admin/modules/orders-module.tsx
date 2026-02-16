@@ -46,6 +46,26 @@ export function OrdersModule() {
     fetchOrders()
   }, [statusFilter, page, searchTerm])
 
+  const toNumber = (value: unknown, fallback = 0) => {
+    const parsed = typeof value === "number" ? value : Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
+  const normalizeOrder = (order: Order): Order => ({
+    ...order,
+    total_amount: toNumber(order.total_amount, 0),
+    discount_amount: order.discount_amount === null ? null : toNumber(order.discount_amount, 0),
+    tax_amount: order.tax_amount === null ? null : toNumber(order.tax_amount, 0),
+    shipping_amount: order.shipping_amount === null ? null : toNumber(order.shipping_amount, 0),
+    payment_status: order.payment_status || "pending",
+    items: order.items?.map((item) => ({
+      ...item,
+      quantity: toNumber(item.quantity, 0),
+      unit_price: toNumber(item.unit_price, 0),
+      subtotal: toNumber(item.subtotal, 0),
+    })),
+  })
+
   const fetchOrders = async () => {
     try {
       setLoading(true)
@@ -61,7 +81,8 @@ export function OrdersModule() {
       })
       if (!res.ok) throw new Error("Failed to fetch orders")
       const { orders: data, total: count } = await res.json()
-      setOrders(data)
+      const normalized = Array.isArray(data) ? data.map(normalizeOrder) : []
+      setOrders(normalized)
       setTotal(count)
     } catch (error) {
       console.error("[v0] Error fetching orders:", error)
@@ -104,14 +125,14 @@ export function OrdersModule() {
       })
       if (res.ok) {
         const fullOrder = await res.json()
-        setSelectedOrder(fullOrder)
+        setSelectedOrder(normalizeOrder(fullOrder))
       } else {
-        setSelectedOrder(order)
+        setSelectedOrder(normalizeOrder(order))
       }
       setIsDialogOpen(true)
     } catch (error) {
       console.error("[v0] Error fetching order details:", error)
-      setSelectedOrder(order)
+      setSelectedOrder(normalizeOrder(order))
       setIsDialogOpen(true)
     }
   }
