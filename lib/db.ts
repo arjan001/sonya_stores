@@ -4,10 +4,16 @@ let pool: Pool | null = null
 
 export function getPool(): Pool {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL
+    let connectionString = process.env.DATABASE_URL
     if (!connectionString) {
       throw new Error('DATABASE_URL environment variable is not set')
     }
+    
+    // Ensure explicit SSL mode to avoid deprecation warning
+    if (!connectionString.includes('sslmode=')) {
+      connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=verify-full'
+    }
+    
     pool = new Pool({ connectionString })
   }
   return pool
