@@ -14,6 +14,7 @@ export interface Product {
   isOnOffer?: boolean
   offerPercentage?: number
   inStock: boolean
+  stockQuantity?: number
   collection?: string
   createdAt: string
 }
