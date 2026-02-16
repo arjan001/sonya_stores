@@ -34,7 +34,7 @@ export function OrdersModule() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -52,7 +52,7 @@ export function OrdersModule() {
       const params = new URLSearchParams({
         limit: String(pageSize),
         offset: String(page * pageSize),
-        ...(statusFilter && { status: statusFilter }),
+        ...(statusFilter && statusFilter !== "all" && { status: statusFilter }),
         ...(searchTerm && { search: searchTerm }),
       })
       const res = await fetch(`/api/admin/orders?${params}`, {
@@ -60,9 +60,9 @@ export function OrdersModule() {
         headers: { 'Content-Type': 'application/json' },
       })
       if (!res.ok) throw new Error("Failed to fetch orders")
-      const { orders: data, total: count } = await res.json()
-      setOrders(data)
-      setTotal(count)
+      const json = await res.json()
+      setOrders(json.orders || [])
+      setTotal(json.total || 0)
     } catch (error) {
       console.error("[v0] Error fetching orders:", error)
     } finally {
@@ -166,12 +166,12 @@ export function OrdersModule() {
             className="flex-1"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }} suppressHydrationWarning>
-          <SelectTrigger suppressHydrationWarning>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }}>
+          <SelectTrigger>
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            {statusFilter && <SelectItem value="">All Status</SelectItem>}
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
@@ -207,14 +207,14 @@ export function OrdersModule() {
                 {orders.map((order) => (
                   <tr key={order.id} className="border-t hover:bg-muted/50">
                     <td className="px-6 py-3 font-medium">{order.order_number}</td>
-                    <td className="px-6 py-3 text-right">KSh {order.total_amount.toFixed(2)}</td>
+                    <td className="px-6 py-3 text-right">KSh {Number(order.total_amount || 0).toFixed(2)}</td>
                     <td className="px-6 py-3 text-center">
                       <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                         order.payment_status === 'completed' ? 'bg-green-100 text-green-700' :
                         order.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {order.payment_status}
+                        {order.payment_status || 'unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-3 text-center">
@@ -224,7 +224,7 @@ export function OrdersModule() {
                       </span>
                     </td>
                     <td className="px-6 py-3 text-sm text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString()}
+                      {order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-6 py-3 text-center">
                       <Button size="sm" variant="ghost" onClick={() => handleViewDetails(order)}>
@@ -291,31 +291,31 @@ export function OrdersModule() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Order Total</p>
-                  <p className="text-2xl font-bold">KSh {selectedOrder.total_amount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">KSh {Number(selectedOrder.total_amount || 0).toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Order Date</p>
-                  <p className="text-lg">{new Date(selectedOrder.created_at).toLocaleDateString()} {new Date(selectedOrder.created_at).toLocaleTimeString()}</p>
+                  <p className="text-lg">{selectedOrder.created_at ? `${new Date(selectedOrder.created_at).toLocaleDateString()} ${new Date(selectedOrder.created_at).toLocaleTimeString()}` : '-'}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 {selectedOrder.discount_amount && (
                   <div>
-                    <p className="text-muted-foreground">Discount</p>
-                    <p className="font-medium">-KSh {selectedOrder.discount_amount.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Discount</p>
+                    <p className="font-medium">-KSh {Number(selectedOrder.discount_amount || 0).toFixed(2)}</p>
                   </div>
                 )}
                 {selectedOrder.tax_amount && (
                   <div>
-                    <p className="text-muted-foreground">Tax</p>
-                    <p className="font-medium">+KSh {selectedOrder.tax_amount.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Tax</p>
+                    <p className="font-medium">+KSh {Number(selectedOrder.tax_amount || 0).toFixed(2)}</p>
                   </div>
                 )}
                 {selectedOrder.shipping_amount && (
                   <div>
-                    <p className="text-muted-foreground">Shipping</p>
-                    <p className="font-medium">+KSh {selectedOrder.shipping_amount.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Shipping</p>
+                    <p className="font-medium">+KSh {Number(selectedOrder.shipping_amount || 0).toFixed(2)}</p>
                   </div>
                 )}
               </div>
@@ -350,8 +350,8 @@ export function OrdersModule() {
                         {selectedOrder.items.map((item) => (
                           <tr key={item.id} className="border-t">
                             <td className="px-4 py-2">{item.quantity}</td>
-                            <td className="px-4 py-2">KSh {item.unit_price.toFixed(2)}</td>
-                            <td className="px-4 py-2 text-right">KSh {item.subtotal.toFixed(2)}</td>
+                            <td className="px-4 py-2">KSh {Number(item.unit_price || 0).toFixed(2)}</td>
+                            <td className="px-4 py-2 text-right">KSh {Number(item.subtotal || 0).toFixed(2)}</td>
                           </tr>
                         ))}
                       </tbody>

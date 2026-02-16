@@ -43,7 +43,7 @@ export function DeliveryModule() {
       })
       if (!res.ok) throw new Error("Failed")
       const data = await res.json()
-      setDeliveries(data)
+      setDeliveries(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("[v0] Error:", error)
     } finally {
@@ -78,9 +78,9 @@ export function DeliveryModule() {
     setFormData({
       name: delivery.name,
       description: delivery.description || "",
-      delivery_time_days: delivery.delivery_time_days,
-      cost: delivery.cost,
-      is_active: delivery.is_active,
+      delivery_time_days: delivery.delivery_time_days ?? 1,
+      cost: delivery.cost ?? 0,
+      is_active: delivery.is_active !== false,
     })
     setEditingId(delivery.id)
     setIsDialogOpen(true)
@@ -153,13 +153,13 @@ export function DeliveryModule() {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-3 text-center">{delivery.delivery_time_days} day(s)</td>
-                  <td className="px-6 py-3 text-right font-semibold">KSh {delivery.cost.toFixed(2)}</td>
+                  <td className="px-6 py-3 text-center">{delivery.delivery_time_days ?? 0} day(s)</td>
+                  <td className="px-6 py-3 text-right font-semibold">KSh {Number(delivery.cost || 0).toFixed(2)}</td>
                   <td className="px-6 py-3 text-center">
                     <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      delivery.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+                      delivery.is_active !== false ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
                     }`}>
-                      {delivery.is_active ? "Active" : "Inactive"}
+                      {delivery.is_active !== false ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="px-6 py-3 text-center flex gap-2 justify-center">

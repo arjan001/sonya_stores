@@ -81,8 +81,8 @@ export function AdminShell({
         })
         
         if (ordersRes.ok) {
-          const orders = await ordersRes.json()
-          setPendingOrders(Array.isArray(orders) ? orders.length : orders.count || 0)
+          const ordersData = await ordersRes.json()
+          setPendingOrders(ordersData.total || (Array.isArray(ordersData.orders) ? ordersData.orders.length : 0))
         }
       } catch (error) {
         console.error('[v0] Error fetching user/orders:', error)
